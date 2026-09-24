@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A set of browser demos for the [`@ronaldroe/micro-flow`](https://www.npmjs.com/package/@ronaldroe/micro-flow) workflow library, pinned to **3.1.0**. Every demo runs its micro-flow workflow entirely in the browser. The Express server only serves HTML pages and static assets. There is no test suite or linter (`npm test` is the default npm placeholder and always fails).
+A set of browser demos for the [`@ronaldroe/micro-flow`](https://www.npmjs.com/package/@ronaldroe/micro-flow) workflow library, pinned to **3.1.1**. Every demo runs its micro-flow workflow entirely in the browser. The Express server only serves HTML pages and static assets. There is no test suite or linter (`npm test` is the default npm placeholder and always fails).
 
 ## Commands
 
@@ -47,7 +47,13 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **Body `sessions` are cleared after each run** (a `workflow_complete` / `workflow_failed` listener). Otherwise every snapshot of a body embeds all of its earlier runs, and a long maze run overflows `JSON.stringify` inside `emit()`.
 - **Needs micro-flow ≥ 3.1.0:** workflow reruns, per-run timeouts and nested failures that propagate. On 3.0.0 every program fails at the second pass of its first loop.
 
-**micro-flow 3.1.0 behaviour the demos depend on:**
+**robot-pathfinder demo** (`public/js/robot-pathfinder.js`, styles layered on `robot-builder.css`): seeded random layouts (maze, caves or open field; xmur3 + mulberry32, seed and layout in the URL hash) that the robot solves with A*.
+- **A* runs as micro-flow steps:** the `a-star-search` `while` loop expands one node per pass, and the heuristic is chosen by a `SwitchStep`.
+- **Structure:** `pathfinder-mission` loops `until-arrived` over a nested `plan-and-drive` workflow: scan → pick-heuristic → a-star-search → path-found? (then: a `drive` workflow; else: unreachable).
+- **Surprise walls:** walls that drop onto the path make `follow-path` stop early. `until-arrived` then re-runs `plan-and-drive` from the robot's position.
+- **Session cleanup:** as in robot-builder, nested bodies clear their `sessions` after each run.
+
+**micro-flow 3.1.x behaviour the demos depend on:**
 - Inside a `LoopStep` callable, `this` is the step instance, so these must be `function` expressions, not arrow functions. `this.results.length` gives the iteration number (loop results reset on every run).
 - A `DelayStep` has no callable. To show its status, put a plain `Step` right before it (`announce-pause-*` in box-tour), and have that step report the DelayStep's name so the badge reads "DelayStep".
 - A `for_each` `LoopStep` calls a function `iterable` when the loop starts, so it can read data from earlier steps (`iterable: () => picked_ids` in pokemon-party). Inside the callable, the current item is `this.current_item`.
@@ -55,7 +61,10 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **Nested failures propagate:** a failed nested `Workflow` (or `Step`) callable fails the step that ran it.
 - **Serialization:** function-valued condition subjects and values, `SwitchStep.subject`, function iterables and `result_per_step_function` are saved **by function name** (`conditional_callables`, `subject_callable`, `iterable_callable`) and resolved from the `CallableRegistry` on hydrate. Unnamed or unregistered functions come back `null`, with a console warning.
 - **Instance state is never serialized, by design.** `setState` data is runtime-only. Anything a restored workflow needs must be saved alongside `serialize()` and written back with `setState` after hydrating (launch-control's checkpoints do this).
-- **Default no-op callables don't round-trip:** a step left with its default callables (e.g. a `ConditionalStep` without explicit branches) serializes a function named `true_callable` and similar, and hydrating it throws unless that name is registered.
 - **`sessions` grow without limit** and are embedded in every snapshot of a workflow (loop and step results, event payloads). A workflow run many times as a nested body should have its `sessions` cleared, and emitted snapshots should leave out `sessions`/`results`.
 - **Events:** retries emit `step_retrying` (with `retry_count`). `workflow_paused` fires once, when the workflow has stopped. `workflow_step_skipped` and `workflow_break_executed` carry `{ workflow, step }`.
 - micro-flow writes every step event to the browser console. The only way to turn this off is the deprecated `State.set('log_suppress', true)`.
+
+## Git
+
+Commit messages must not mention Claude, AI or any assistant. No `Co-Authored-By` trailer, no "Generated with" line, just a plain description of the change.

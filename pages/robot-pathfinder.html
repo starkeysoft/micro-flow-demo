@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/robot-builder.css" />
+  <link rel="stylesheet" href="/css/robot-pathfinder.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="robot-page pathfinder">
+
+  <h1>micro-flow &mdash; robot pathfinder demo</h1>
+
+  <div class="arena world" id="world">
+    <div class="grid" id="grid"></div>
+    <div class="box robot" id="robot"><span class="robot-arrow"></span></div>
+    <div class="world-readout" id="readout">ready</div>
+  </div>
+
+  <div class="controls">
+    <button class="button" id="go" type="button">Go</button>
+    <button class="button ghost" id="stop" type="button" disabled>Stop</button>
+
+    <label class="control">
+      <span class="stat-label">Seed</span>
+      <span class="seed-row">
+        <input class="block-input seed-input" id="seed" spellcheck="false" autocomplete="off" />
+        <button class="icon-button" id="random-seed" type="button" title="Random seed" aria-label="Random seed">⟳</button>
+      </span>
+    </label>
+
+    <label class="control">
+      <span class="stat-label">Layout</span>
+      <select id="layout">
+        <option value="maze">Maze</option>
+        <option value="caves">Caves</option>
+        <option value="field">Open field</option>
+      </select>
+    </label>
+
+    <label class="control">
+      <span class="stat-label">Heuristic</span>
+      <select id="heuristic">
+        <option value="manhattan">Manhattan</option>
+        <option value="euclidean">Euclidean</option>
+        <option value="dijkstra">None (Dijkstra)</option>
+      </select>
+    </label>
+
+    <label class="control">
+      <span class="stat-label">Speed <span id="speed-ms">200 ms</span></span>
+      <input type="range" id="speed" min="30" max="500" step="10" value="200" />
+    </label>
+
+    <label class="control control-inline">
+      <input type="checkbox" id="surprise" checked />
+      <span class="stat-label">Surprise walls</span>
+    </label>
+  </div>
+
+  <div class="lower pathfinder-lower">
+    <section class="panel">
+      <h2>Mission workflow <span class="panel-note">lights up from micro-flow events</span></h2>
+      <div class="plan-tree" id="plan"></div>
+    </section>
+    <div class="side">
+      <section class="panel">
+        <h2>This run</h2>
+        <dl class="stats">
+          <dt>Nodes expanded</dt><dd id="stat-expanded">0</dd>
+          <dt>Path length (latest plan)</dt><dd id="stat-path">—</dd>
+          <dt>Replans</dt><dd id="stat-replans">0</dd>
+          <dt>Surprise walls</dt><dd id="stat-surprises">0</dd>
+          <dt>Moves</dt><dd id="stat-moves">0</dd>
+        </dl>
+        <ul class="legend">
+          <li><span class="swatch open"></span>frontier</li>
+          <li><span class="swatch closed"></span>visited</li>
+          <li><span class="swatch path"></span>path</li>
+          <li><span class="swatch surprise"></span>surprise</li>
+        </ul>
+      </section>
+      <section class="panel">
+        <h2>Runs <span class="panel-note">from mission.sessions</span></h2>
+        <ol class="runs" id="runs"><li class="empty">No runs yet.</li></ol>
+      </section>
+    </div>
+  </div>
+
+  <!-- Status panel -->
+  <div class="status-panel">
+    <h2>Workflow Status</h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">
+      Runs: <span id="run-count">0</span> ·
+      Replans: <span id="replan-count">0</span>
+    </div>
+  </div>
+
+  <script type="module" src="/js/robot-pathfinder.js"></script>
+</body>
+</html>
