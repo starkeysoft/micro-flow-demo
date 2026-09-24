@@ -1,0 +1,209 @@
+/* Shared look for every micro-flow demo page. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0f1117;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #e2e8f0;
+}
+
+h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Arena ── */
+.arena {
+  position: relative;
+  width: 640px;
+  height: 400px;
+  border: 2px solid #1e293b;
+  border-radius: 12px;
+  background: #13192a;
+  overflow: hidden;
+}
+
+/* grid lines (decorative) */
+.arena::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 64px 40px;
+}
+
+/* ── Box ── */
+.box {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 24px rgba(99,102,241,.55);
+  transition: left 0.28s ease, top 0.28s ease, background 0.2s, box-shadow 0.2s;
+  /* position is set via JS using % of arena size */
+}
+
+.box.flash {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  box-shadow: 0 0 36px rgba(239,68,68,.8);
+}
+
+/* ── Status panel ── */
+.status-panel {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 260px;
+  background: rgba(15,17,23,.9);
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  font-size: 0.82rem;
+}
+
+.status-panel h2 {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 0.7rem;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #475569;
+}
+
+.stat-value {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #a5b4fc;
+  overflow-wrap: anywhere;
+}
+
+.step-type-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-family: monospace;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1e2d45;
+  color: #60a5fa;
+  margin-bottom: 0.7rem;
+}
+
+.counter {
+  font-size: 0.75rem;
+  color: #64748b;
+  border-top: 1px solid #1e293b;
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+.counter span {
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+/* ── Demo index ── */
+.demo-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  width: min(960px, 100% - 32px);
+}
+
+@media (max-width: 760px) {
+  .demo-list { grid-template-columns: 1fr; }
+}
+
+.demo-list li { display: flex; }
+.demo-list a { flex: 1; }
+
+.demo-list a {
+  display: block;
+  padding: 1rem 1.2rem;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #13192a;
+  color: #a5b4fc;
+  font-family: 'Courier New', monospace;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.demo-list a:hover {
+  border-color: #6366f1;
+  box-shadow: 0 0 24px rgba(99,102,241,.25);
+}
+
+.demo-list .demo-desc {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* ── Button ── */
+.button {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  box-shadow: 0 0 24px rgba(99,102,241,.4);
+  cursor: pointer;
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+.button:hover:not(:disabled) {
+  box-shadow: 0 0 32px rgba(99,102,241,.7);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.button.ghost {
+  background: transparent;
+  border: 1px solid #1e293b;
+  color: #a5b4fc;
+  box-shadow: none;
+}
+
+.button.ghost:hover:not(:disabled) {
+  border-color: #6366f1;
+  box-shadow: 0 0 24px rgba(99,102,241,.25);
+}

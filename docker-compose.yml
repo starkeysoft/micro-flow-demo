@@ -1,0 +1,6 @@
+services:
+  micro-flow-demo:
+    build: .
+    ports:
+      - "8082:8081"
+    restart: always

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/pokemon-party.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body>
+
+  <h1>micro-flow &mdash; pokémon party demo</h1>
+
+  <div class="arena party" id="party"></div>
+
+  <button class="button" id="refresh" type="button" disabled>Draw a new party</button>
+
+  <!-- Status panel -->
+  <div class="status-panel">
+    <h2>Workflow Status</h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">Parties drawn: <span id="parties">0</span></div>
+  </div>
+
+  <script type="module" src="/js/pokemon-party.js"></script>
+</body>
+</html>

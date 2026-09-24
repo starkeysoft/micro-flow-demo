@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/launch-control.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="launch-page">
+
+  <h1>micro-flow &mdash; launch control demo</h1>
+
+  <!-- Shown when a checkpoint from an earlier visit is in localStorage -->
+  <div class="banner" id="banner" hidden>
+    <span id="banner-text"></span>
+    <span class="banner-actions">
+      <button class="button" id="banner-resume" type="button">Resume</button>
+      <button class="button ghost" id="banner-discard" type="button">Discard</button>
+    </span>
+  </div>
+
+  <div class="arena scene" id="scene">
+    <div class="stars" id="stars"></div>
+
+    <div class="readout">
+      <div class="readout-main" id="readout">READY</div>
+      <div class="readout-sub" id="readout-sub">press launch</div>
+    </div>
+
+    <div class="gauge">
+      <div class="gauge-track"><div class="gauge-fill" id="fuel-fill"></div></div>
+      <div class="gauge-label">fuel <span id="fuel-pct">0%</span></div>
+    </div>
+
+    <ul class="systems" id="systems"></ul>
+    <div class="weather">wx <span id="weather">—</span></div>
+
+    <div class="tower"></div>
+    <div class="rocket" id="rocket">
+      <div class="stage-upper">
+        <div class="nose"></div>
+        <div class="body"><div class="porthole"></div></div>
+      </div>
+      <div class="stage-booster" id="booster">
+        <div class="fin fin-left"></div>
+        <div class="fin fin-right"></div>
+        <div class="flame" id="flame"></div>
+      </div>
+    </div>
+    <div class="ground"></div>
+  </div>
+
+  <div class="controls">
+    <button class="button" id="launch" type="button">Launch</button>
+    <button class="button ghost" id="pause" type="button" disabled>Pause</button>
+    <button class="button ghost" id="reset" type="button">Reset</button>
+
+    <label class="control">
+      <span class="stat-label">Chaos <span id="chaos-pct">20%</span></span>
+      <input type="range" id="chaos" min="0" max="60" step="5" value="20" />
+    </label>
+
+    <label class="control">
+      <span class="stat-label">Weather</span>
+      <select id="weather-select">
+        <option value="auto">Auto</option>
+        <option value="clear">Clear</option>
+        <option value="windy">Windy</option>
+        <option value="storm">Storm</option>
+      </select>
+    </label>
+
+    <label class="control control-inline">
+      <input type="checkbox" id="fast-track" />
+      <span class="stat-label">Fast-track</span>
+    </label>
+
+    <a class="observer-link" href="/launch-observer" target="_blank" rel="noopener">Open observer tab ↗</a>
+  </div>
+
+  <div class="panels">
+    <section class="panel">
+      <h2>Step timeline</h2>
+      <ol class="timeline" id="timeline"></ol>
+    </section>
+    <section class="panel">
+      <h2>Event log</h2>
+      <ol class="log" id="log"></ol>
+    </section>
+  </div>
+
+  <!-- Status panel -->
+  <div class="status-panel">
+    <h2>Workflow Status</h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">
+      Launches: <span id="launches">0</span> ·
+      Scrubs: <span id="scrubs">0</span> ·
+      Aborts: <span id="aborts">0</span>
+    </div>
+  </div>
+
+  <script type="module" src="/js/launch-control.js"></script>
+</body>
+</html>
