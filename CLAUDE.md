@@ -24,7 +24,7 @@ The project is ESM (`"type": "module"`) and uses Express 5.
 
 Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so demo scripts use `import { ... } from 'micro-flow'`. To upgrade micro-flow, change its exact version in `package.json`. If the new version adds imports that only exist in Node, esbuild fails at server startup.
 
-**Adding a demo**: create `pages/<name>.html` and `public/js/<name>.js`, and add a link card to `pages/index.html`. That list is maintained by hand. Every demo shares the same visual design and **must include the status panel** in the top right.
+**Adding a demo**: create `pages/<name>.html` and `public/js/<name>.js`, add a link card to `pages/index.html` (that list is maintained by hand), and add a section for it to `README.md`. Every demo shares the same visual design and **must include the status panel** in the top right.
 - Copy the `<head>` (stylesheet link and import map) and the `.status-panel` markup from an existing page, and load the demo script with `<script type="module">`.
 - `public/css/demo.css` holds the shared styles: dark page, uppercase `h1`, `.arena`, `.box` / `.box.flash`, `.button`, and the status panel classes (`.status-panel`, `.step-type-badge`, `.stat-row`, `.counter`). Put styles for a single demo in `public/css/<name>.css`.
 - `public/js/status-panel.js` exports `createStatusPanel(step_types)`, which returns a `status(stepName, callableText, badge?)` function. `step_types` links step names to badge labels (e.g. `'LoopStep › for'`); an explicit `badge` argument takes priority. Update the map when you add or rename steps, or the badge falls back to "Step".
@@ -64,6 +64,10 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **`sessions` grow without limit** and are embedded in every snapshot of a workflow (loop and step results, event payloads). A workflow run many times as a nested body should have its `sessions` cleared, and emitted snapshots should leave out `sessions`/`results`.
 - **Events:** retries emit `step_retrying` (with `retry_count`). `workflow_paused` fires once, when the workflow has stopped. `workflow_step_skipped` and `workflow_break_executed` carry `{ workflow, step }`.
 - micro-flow writes every step event to the browser console. The only way to turn this off is the deprecated `State.set('log_suppress', true)`.
+
+## README
+
+Every change must include matching updates to `README.md`: new or changed demos, controls, commands, versions or setup steps. The README is the user-facing guide to running and using the demos, so keep it in step with the code.
 
 ## Git
 
