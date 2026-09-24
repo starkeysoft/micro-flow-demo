@@ -1,0 +1,123 @@
+/* link-checker: URL input + the server's report. */
+
+/* ── Input ── */
+.input-panel textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: #0f1117;
+  color: #a5b4fc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+}
+
+.request-line {
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+/* ── Report ── */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 0.7rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.summary b { font-family: 'Courier New', monospace; color: #a5b4fc; }
+.summary .ok b { color: #34d399; }
+.summary .redirect b { color: #60a5fa; }
+.summary .broken b, .summary .failed b { color: #ef4444; }
+
+.report { list-style: none; }
+
+.report .empty { font-size: 0.75rem; color: #475569; }
+
+.row {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr) 9rem;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #1a2236;
+}
+
+.pill {
+  justify-self: start;
+  font-family: monospace;
+  font-size: 0.66rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.pill.ok       { background: rgba(52,211,153,.14); color: #34d399; }
+.pill.redirect { background: rgba(96,165,250,.14); color: #60a5fa; }
+.pill.broken, .pill.timeout, .pill.dns, .pill.error { background: rgba(239,68,68,.14); color: #ef4444; }
+.pill.blocked, .pill.invalid { background: rgba(245,158,11,.14); color: #f59e0b; }
+.pill.checking { background: #1e2d45; color: #60a5fa; animation: blink 0.8s ease-in-out infinite; }
+
+.row-url {
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.74rem;
+  color: #a5b4fc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-meta {
+  grid-column: 2 / -1;
+  font-size: 0.64rem;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.latency {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.66rem;
+  color: #64748b;
+}
+
+.latency-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: #1e293b;
+  overflow: hidden;
+}
+
+.latency-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #34d399, #60a5fa);
+  transition: width 0.3s ease;
+}
+
+@keyframes blink { 50% { opacity: 0.4; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pill.checking { animation: none; }
+  .latency-bar span { transition: none; }
+}

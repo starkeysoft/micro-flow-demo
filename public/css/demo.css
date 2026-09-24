@@ -207,3 +207,93 @@ h1 {
   border-color: #6366f1;
   box-shadow: 0 0 24px rgba(99,102,241,.25);
 }
+
+/* ── Server Status panel (backend demos) ── */
+.server-panel {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  width: 260px;
+  max-height: calc(100vh - 290px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(15,17,23,.92);
+  border: 1px solid #1e293b;
+  border-top: 2px solid #34d399;
+  border-radius: 12px;
+  padding: 1rem 1.2rem 0.8rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  font-size: 0.82rem;
+}
+
+.server-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.server-panel .step-type-badge { align-self: flex-start; background: rgba(52,211,153,.12); color: #34d399; }
+
+.server-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #475569;
+}
+
+.server-dot.live { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,.8); }
+.server-dot.down { background: #ef4444; }
+
+.server-events {
+  list-style: none;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-top: 0.6rem;
+  scrollbar-width: thin;
+  scrollbar-color: #1e293b transparent;
+}
+
+.server-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 6px;
+  padding: 2px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  line-height: 1.35;
+}
+
+.server-event-time    { color: #334155; grid-row: span 2; }
+.server-event-name    { color: #34d399; overflow-wrap: anywhere; }
+.server-event-subject { color: #a5b4fc; overflow-wrap: anywhere; }
+.server-event.good .server-event-name { color: #6ee7b7; }
+.server-event.warn .server-event-name { color: #f59e0b; }
+.server-event.bad  .server-event-name { color: #ef4444; }
+
+.server-source {
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid #1e293b;
+  font-family: 'Courier New', monospace;
+  font-size: 0.56rem;
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+/* phones: status panels join the page flow */
+@media (max-width: 700px) {
+  .status-panel, .server-panel {
+    position: static;
+    width: 100%;
+    max-height: none;
+    margin-top: 1rem;
+  }
+}

@@ -16,7 +16,7 @@ The project is ESM (`"type": "module"`) and uses Express 5.
 
 ## Architecture
 
-**Routing** (`server.js`): every `pages/<name>.html` is served at `/<name>`, and `pages/index.html` at `/`. Routes are registered from a directory scan at startup, so restart the server after adding a page. Everything under `public/` is served statically at the root (`/css/...`, `/js/...`).
+**Routing** (`server.js`): every `pages/<name>.html` is served at `/<name>`, and `pages/index.html` at `/`. API routes for the backend demos are under `/api` (see below). Routes are registered from a directory scan at startup, so restart the server after adding a page. Everything under `public/` is served statically at the root (`/css/...`, `/js/...`).
 
 **How pages load micro-flow**: micro-flow is published as unbundled ESM that imports Node's `crypto` and `node-schedule`, and `node-schedule` requires Node's `events`. A browser can't load that straight from `node_modules`. At startup, `lib/bundle-micro-flow.js` runs esbuild to build a single browser ESM bundle in memory, and the server serves it at `/vendor/micro-flow.js`. In that bundle:
 - `crypto` is replaced by `lib/crypto-shim.js`. It falls back to `getRandomValues` because browsers only expose `crypto.randomUUID` over HTTPS or localhost, and the demos are often opened by LAN IP.
@@ -52,6 +52,14 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **Structure:** `pathfinder-mission` loops `until-arrived` over a nested `plan-and-drive` workflow: scan → pick-heuristic → a-star-search → path-found? (then: a `drive` workflow; else: unreachable).
 - **Surprise walls:** walls that drop onto the path make `follow-path` stop early. `until-arrived` then re-runs `plan-and-drive` from the robot's position.
 - **Session cleanup:** as in robot-builder, nested bodies clear their `sessions` after each run.
+
+**Backend demos** (link-checker, job-scheduler): the workflows run in Node on the server. The pages call REST endpoints and depend on the responses, and a second **Server Status** panel shows the server's workflow activity.
+- **`api/*.js`:** Express routers mounted under `/api` in `server.js` (after `express.json()`). They import micro-flow directly from `@ronaldroe/micro-flow`, a separate instance from the browser bundle, so absolute `DelayStep`s use native `node-schedule`. `server.js` sets `State.set('log_suppress', true)` to keep micro-flow out of the server console.
+- **`api/server-status.js`:** subscribes once to every server event and forwards a **small summary** (never the full payload) to SSE clients at `/api/server-status/stream?demo=<name>`. Call `track(workflow_or_step, demo, job, { top })` on anything a demo creates so its events are tagged (steps match by id or `parent_workflow_id`), and `forget()` when a job is dropped. New connections get the demo's last 12 events, then a `hello` with the active count.
+- **`public/js/server-status.js`:** `createServerStatus({ demo })` builds the bottom-right panel and returns `{ onEvent }`. It closes its `EventSource` while the tab is hidden, because browsers allow only about 6 HTTP/1.1 connections per host across all tabs.
+- **Page frame:** each backend page also runs a small **client-side** workflow (submit → poll/refresh) that drives the usual top-right status panel. The shared frame styles are in `public/css/backend.css`.
+- **link-check:** resolves every host (and every redirect hop, followed manually) and blocks private, loopback and link-local addresses (SSRF guard). Keep that guard on any new server-side fetching.
+- **State:** jobs are in memory and capped (link-check: 25 kept, 3 running; scheduler: 30 waiting, 5–120 s delays, finished jobs expire after 30 minutes). A server restart, including a nodemon reload, clears them.
 
 **micro-flow 3.1.x behaviour the demos depend on:**
 - Inside a `LoopStep` callable, `this` is the step instance, so these must be `function` expressions, not arrow functions. `this.results.length` gives the iteration number (loop results reset on every run).

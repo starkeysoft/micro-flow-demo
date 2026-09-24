@@ -33,6 +33,8 @@ Then open http://localhost:8082. The container copies the source when the image 
 
 Every demo has a **Workflow Status** panel in the top right that shows the step that's running, its type and what it's doing.
 
+The first five demos run their workflows in your browser. **link-checker** and **job-scheduler** run theirs on the server: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
+
 ### box-tour (`/box-tour`)
 
 A box moves around the edge of the arena in a loop, driven by `Step`, `LoopStep`, `DelayStep` and `ConditionalStep`. From the second lap on, a conditional step makes the box flash. There's nothing to set; just watch.
@@ -76,11 +78,31 @@ The robot finds its own way to the goal with the A* search algorithm, on a layou
 - **Surprise walls** drop walls onto the path while the robot drives. When it hits one it stops and plans again from where it is. If the walls cut off the goal completely, the run ends as unreachable.
 - The **Mission workflow** panel shows the workflow tree and highlights each step as it runs.
 
+### link-checker (`/link-checker`)
+
+The server checks a list of URLs for you. Your browser can't read most sites directly because they don't allow cross-origin requests, but the server can.
+
+- Enter up to 10 URLs, one per line (a sample list is filled in), and press **Check links**.
+- The page sends the list to `POST /api/link-check`, then polls `GET /api/link-check/:id` and fills in the report as each URL finishes.
+- Each row shows the result (`200`, a redirect such as `301→200`, `404`, `timeout`, `DNS`, `blocked` or `invalid`), how long it took, the final URL after redirects and the content type. The summary counts OK, redirected, broken and failed URLs.
+- On the server, each URL is checked in its own step with one retry and a 5 s timeout per attempt. Loopback, private and link-local addresses are blocked, so the checker can't be used to probe your network.
+- It needs an internet connection.
+
+### job-scheduler (`/job-scheduler`)
+
+Schedule jobs that run on the server at a set time.
+
+- Pick a task: **Deliver a message**, **Roll 3d6**, or **Count primes** below a number (the counting happens on the server).
+- Set **Run in** (5–120 s) and press **Schedule**. The job appears under **Waiting** with a countdown, then moves to **Done** with its result.
+- The jobs live on the server: close the tab, come back later, and the results are there. Everyone who opens the page sees the same board.
+- **clear** removes finished jobs. Jobs are kept in server memory, so restarting the server clears them.
+
 ## How it works
 
 - `server.js` serves every `pages/<name>.html` at `/<name>` (and `pages/index.html` at `/`), plus the files in `public/`.
 - micro-flow is published for Node, so at startup `lib/bundle-micro-flow.js` uses esbuild to bundle it into a single browser module, served at `/vendor/micro-flow.js`. Each page maps `micro-flow` to that file with an import map, so demo code uses `import { Workflow } from 'micro-flow'`.
 - Shared styles are in `public/css/demo.css`, and the shared status panel code is in `public/js/status-panel.js`.
+- The server-side demos' API lives in `api/`. Their workflows use micro-flow straight from `node_modules`, and `api/server-status.js` streams their events to the page's Server Status panel over Server-Sent Events (`/api/server-status/stream?demo=…`).
 
 ## Adding a demo
 

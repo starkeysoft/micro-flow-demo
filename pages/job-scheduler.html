@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/backend.css" />
+  <link rel="stylesheet" href="/css/job-scheduler.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="backend-page">
+
+  <h1>micro-flow &mdash; job scheduler demo</h1>
+
+  <p class="backend-note">
+    Each job is a micro-flow workflow on the <strong>server</strong> that waits for its time, then runs.
+    Close this tab and the jobs still run; come back to see the results. Open this page in two
+    browsers and you share one board.
+  </p>
+
+  <section class="panel form-panel">
+    <h2>New job <span class="panel-note">POST /api/scheduler/jobs</span></h2>
+    <form class="job-form" id="job-form">
+      <label class="field">
+        <span class="stat-label">Task</span>
+        <select id="task">
+          <option value="deliver">Deliver a message</option>
+          <option value="dice">Roll 3d6</option>
+          <option value="primes">Count primes</option>
+        </select>
+      </label>
+      <label class="field field-grow" id="message-field">
+        <span class="stat-label">Message</span>
+        <input id="message" maxlength="120" value="Time to stretch your legs" />
+      </label>
+      <label class="field" id="limit-field" hidden>
+        <span class="stat-label">Below</span>
+        <input id="limit" type="number" min="1000" max="20000000" step="1000" value="5000000" />
+      </label>
+      <label class="field">
+        <span class="stat-label">Run in <span id="delay-label">15 s</span></span>
+        <input id="delay" type="range" min="5" max="120" step="5" value="15" />
+      </label>
+      <button class="button" id="schedule" type="submit">Schedule</button>
+    </form>
+    <p class="form-error" id="form-error" hidden></p>
+  </section>
+
+  <section class="board" aria-label="Job board">
+    <div class="column">
+      <h3>Waiting <span id="count-waiting">0</span></h3>
+      <ol class="cards" id="col-waiting"></ol>
+    </div>
+    <div class="column">
+      <h3>Running <span id="count-running">0</span></h3>
+      <ol class="cards" id="col-running"></ol>
+    </div>
+    <div class="column">
+      <h3>Done <span id="count-done">0</span>
+        <button class="text-link" id="clear-done" type="button">clear</button>
+      </h3>
+      <ol class="cards" id="col-done"></ol>
+    </div>
+  </section>
+  <p class="board-source" id="board-source">GET /api/scheduler/jobs</p>
+
+  <!-- Status panel (this page's client-side workflow) -->
+  <div class="status-panel">
+    <h2>Workflow Status <span class="panel-tag">browser</span></h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">Jobs scheduled from this tab: <span id="scheduled-count">0</span></div>
+  </div>
+
+  <script type="module" src="/js/job-scheduler.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+/* Page frame shared by the backend demos (link-checker, job-scheduler). */
+
+body.backend-page {
+  justify-content: flex-start;
+  padding: 2rem 16px 3rem;
+}
+
+.backend-note {
+  width: 640px;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.backend-note strong { color: #34d399; font-weight: 600; }
+
+.panel {
+  width: 640px;
+  max-width: 100%;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #13192a;
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 14px;
+}
+
+.panel h2 {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+  margin-bottom: 0.6rem;
+}
+
+.panel-note, .panel-tag {
+  margin-left: 0.5rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #334155;
+}
+
+.status-panel .panel-tag { color: #60a5fa; }

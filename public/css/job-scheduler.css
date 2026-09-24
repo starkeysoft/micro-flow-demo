@@ -1,0 +1,180 @@
+/* job-scheduler: job form + three-column board of server jobs. */
+
+.job-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.7rem 0.9rem;
+}
+
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field[hidden] { display: none; }
+.field-grow { flex: 1; min-width: 10rem; }
+
+.field select, .field input:not([type="range"]) {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 5px 8px;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: #0f1117;
+  color: #a5b4fc;
+}
+
+.field input[type="number"] { width: 8.5rem; }
+.field input[type="range"] { width: 120px; accent-color: #6366f1; }
+
+.form-error {
+  margin-top: 0.6rem;
+  font-size: 0.74rem;
+  color: #ef4444;
+}
+
+/* ── Board ── */
+.board {
+  width: 640px;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.column {
+  min-height: 220px;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #13192a;
+  padding: 0.7rem;
+}
+
+.column h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+}
+
+.column h3 > span {
+  font-family: 'Courier New', monospace;
+  color: #a5b4fc;
+}
+
+.text-link {
+  margin-left: auto;
+  font: inherit;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  border: none;
+  background: none;
+  color: #60a5fa;
+  cursor: pointer;
+}
+
+.cards { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.card {
+  position: relative;
+  padding: 0.6rem 0.65rem;
+  border: 1px solid #1e293b;
+  border-left: 3px solid #6366f1;
+  border-radius: 9px;
+  background: #0f1117;
+  font-size: 0.72rem;
+}
+
+.card.running { border-left-color: #60a5fa; box-shadow: 0 0 16px rgba(96,165,250,.3); }
+.card.done    { border-left-color: #34d399; }
+.card.failed  { border-left-color: #ef4444; }
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-task {
+  font-family: 'Courier New', monospace;
+  color: #a5b4fc;
+}
+
+.card-id {
+  margin-left: auto;
+  font-family: monospace;
+  font-size: 0.58rem;
+  color: #334155;
+}
+
+.card-message {
+  margin-top: 4px;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.card-result {
+  margin-top: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #34d399;
+  overflow-wrap: anywhere;
+}
+
+.card.failed .card-result { color: #ef4444; }
+
+.card-detail {
+  margin-top: 2px;
+  font-size: 0.62rem;
+  color: #475569;
+}
+
+/* countdown ring */
+.ring { width: 30px; height: 30px; flex-shrink: 0; }
+.ring circle { fill: none; stroke-width: 3; }
+.ring .track { stroke: #1e293b; }
+.ring .arc {
+  stroke: #6366f1;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+.ring text {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  fill: #a5b4fc;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #1e293b;
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.column .empty { font-size: 0.68rem; color: #334155; }
+
+.board-source {
+  width: 640px;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  color: #334155;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 700px) {
+  .board { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
