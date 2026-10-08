@@ -57,14 +57,22 @@ select, .input {
 }
 
 .palette-group {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  font: inherit;
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  text-align: left;
   color: #475569;
   margin: 0.55rem 0.2rem 0.3rem;
+  padding: 0;
+  cursor: default;
 }
 
-.palette-group:first-child { margin-top: 0.1rem; }
+.palette-section:first-child .palette-group { margin-top: 0.1rem; }
 
 .tile {
   display: grid;
@@ -485,17 +493,108 @@ select, .input {
 .hidden-step { opacity: 0.5; }
 .tree-empty { color: #334155; }
 
-/* ── Narrow screens: the inspector joins the page flow ── */
+/* ── Narrow screens ──
+   The inspector joins the page flow, the palette becomes a menu bar of
+   categories, and the status panel is a bar fixed to the bottom. */
 @media (max-width: 1000px) {
-  body.flow-page { padding: 1rem 16px; }
+  body.flow-page { padding: 1rem 16px calc(84px + env(safe-area-inset-bottom)); }
   .inspector { position: static; width: auto; margin-top: 0.8rem; }
-  .status-panel { position: static; width: auto; margin-top: 0.8rem; }
   .flow-layout { grid-template-columns: 1fr; height: auto; }
-  .palette { display: flex; flex-wrap: wrap; gap: 4px; max-height: 150px; }
-  .palette .tile { width: auto; margin: 0; }
-  .palette-group { width: 100%; margin: 0.2rem 0; }
   .canvas { height: 460px; }
   .log-entry { grid-template-columns: 70px minmax(0, 1fr); }
   .log-entry .log-subject { grid-column: 2; }
   .node-data { grid-template-columns: 1fr; }
+
+  .palette {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    overflow: visible;
+  }
+
+  .palette-section { flex: 1 1 0; min-width: 0; }
+
+  .palette-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-align: center;
+    color: #a5b4fc;
+    cursor: pointer;
+  }
+
+  .palette-group::after { content: '▾'; font-size: 0.7rem; color: #475569; }
+  .palette-section:first-child .palette-group { margin-top: 0; }
+  .palette-section.open .palette-group { background: #1e293b; color: #e0e7ff; }
+  .palette-section.open .palette-group::after { content: '▴'; color: #a5b4fc; }
+
+  .palette-items {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #0f1422;
+    box-shadow: 0 14px 32px rgba(0,0,0,.6);
+  }
+
+  .palette-section.open .palette-items { display: grid; }
+
+  .palette .tile {
+    min-height: 52px;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+
+  body.flow-page .status-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    z-index: 30;
+    width: auto;
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 10px;
+    padding: 0.55rem 0.9rem calc(0.55rem + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  body.flow-page .status-panel h2 { display: none; }
+  body.flow-page .status-panel .step-type-badge { grid-row: 1; grid-column: 1; margin: 0; }
+  body.flow-page .status-panel .stat-row { margin: 0; min-width: 0; }
+  body.flow-page .status-panel .stat-label { display: none; }
+  body.flow-page .status-panel .stat-row:has(#step-name) { grid-row: 1; grid-column: 2; }
+  body.flow-page .status-panel .stat-row:has(#callable-name) { grid-row: 2; grid-column: 1 / -1; }
+  body.flow-page .status-panel .stat-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.flow-page .status-panel .stat-row:has(#callable-name) .stat-value { font-size: 0.72rem; color: #94a3b8; }
+  body.flow-page .status-panel .counter {
+    grid-row: 1;
+    grid-column: 3;
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.66rem;
+    white-space: nowrap;
+  }
 }

@@ -393,10 +393,27 @@ function flashError(message, node_id = null) {
 }
 
 // --- Palette and quick add ---
+// On narrow screens the palette is a menu bar: each category header opens a
+// list of its nodes, and tapping one adds it to the canvas.
+const narrow = window.matchMedia('(max-width: 1000px)');
+
+function closePaletteMenu() {
+  document.querySelectorAll('.palette-section.open').forEach((s) => s.classList.remove('open'));
+}
+
 function renderPalette() {
   const palette = $('palette');
   for (const group of GROUPS) {
-    palette.append(el('h3', 'palette-group', group));
+    const section = el('div', 'palette-section');
+    const header = el('button', 'palette-group', group);
+    header.type = 'button';
+    header.addEventListener('click', () => {
+      if (!narrow.matches) return;
+      const was_open = section.classList.contains('open');
+      closePaletteMenu();
+      section.classList.toggle('open', !was_open);
+    });
+    const items = el('div', 'palette-items');
     for (const [type, def] of Object.entries(NODE_TYPES).filter(([, d]) => d.group === group)) {
       const tile = el('button', 'tile');
       tile.type = 'button';
@@ -409,17 +426,25 @@ function renderPalette() {
         e.dataTransfer.setData('text/plain', type);
         e.dataTransfer.effectAllowed = 'copy';
       });
-      // Clicking a tile (handy on touch screens) drops the node mid-canvas.
+      // Clicking a tile (the way to add nodes on touch screens) drops the node mid-canvas.
       tile.addEventListener('click', () => {
+        closePaletteMenu();
         const r = canvasEl.getBoundingClientRect();
         const p = toWorld(r.left + r.width / 2 - 90, r.top + r.height / 2 - 40);
         const node = addFromPalette(type, p.x + (Math.random() - 0.5) * 60, p.y + (Math.random() - 0.5) * 60);
         if (node) select({ kind: 'node', id: node.id });
       });
-      palette.append(tile);
+      items.append(tile);
     }
+    section.append(header, items);
+    palette.append(section);
   }
 }
+
+document.addEventListener('pointerdown', (e) => {
+  if (!e.target.closest('.palette')) closePaletteMenu();
+});
+narrow.addEventListener('change', closePaletteMenu);
 
 function addFromPalette(type, x, y) {
   if (type === 'trigger' && graph.nodes.some((n) => n.type === 'trigger')) {
@@ -611,6 +636,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select')) return;
   if (e.key === 'Escape') {
     closeQuickAdd();
+    closePaletteMenu();
     select(null);
   } else if ((e.key === 'Delete' || e.key === 'Backspace') && selected) {
     e.preventDefault();

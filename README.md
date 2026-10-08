@@ -130,6 +130,7 @@ An n8n-style visual editor: drag nodes onto a canvas, wire them together and pre
 - **Tabs:** **Output** (Display cards), **Execution log** (micro-flow events), **Node data** (the selected node's last input and output), **Compiled micro-flow** (the generated workflow tree, including the small hidden helper steps around loops) and **serialize()**.
 - **Templates:** Pokémon type sorter, Weather board, Dog gallery and Flaky API (retries and a filter). The first three call public APIs (PokeAPI, Open-Meteo, dog.ceo), so they need an internet connection.
 - Your flow is saved in the browser automatically. **Share** copies a link with the flow in it, and **Clear** starts over.
+- **On a phone or narrow window:** the palette becomes a menu bar of categories. Tap one to open its nodes, then tap a node to add it to the middle of the canvas. Touch works for dragging nodes and wires. The status panel becomes a bar fixed to the bottom of the screen.
 
 ### diner-rush (`/diner-rush`)
 
