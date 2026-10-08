@@ -288,12 +288,58 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-/* phones: status panels join the page flow */
-@media (max-width: 700px) {
-  .status-panel, .server-panel {
+/* Narrow screens (phones, small windows): the status panel is always a bar
+   fixed to the bottom of the screen, and a spacer after the page keeps it
+   from covering the end of the content. The backend demos' Server Status
+   panel joins the page flow instead. */
+@media (max-width: 1000px) {
+  body::after {
+    content: '';
+    display: block;
+    flex: none;
+    height: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .server-panel {
     position: static;
     width: 100%;
     max-height: none;
     margin-top: 1rem;
+  }
+
+  .status-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    z-index: 30;
+    width: auto;
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 10px;
+    padding: 0.55rem 0.9rem calc(0.55rem + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .status-panel h2 { display: none; }
+  .status-panel .step-type-badge { grid-row: 1; grid-column: 1; margin: 0; }
+  .status-panel .stat-row { margin: 0; min-width: 0; }
+  .status-panel .stat-label { display: none; }
+  .status-panel .stat-row:has(#step-name) { grid-row: 1; grid-column: 2; }
+  .status-panel .stat-row:has(#callable-name) { grid-row: 2; grid-column: 1 / -1; }
+  .status-panel .stat-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status-panel .stat-row:has(#callable-name) .stat-value { font-size: 0.72rem; color: #94a3b8; }
+  .status-panel .counter {
+    grid-row: 1;
+    grid-column: 3;
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.66rem;
+    white-space: nowrap;
   }
 }

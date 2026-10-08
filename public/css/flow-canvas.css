@@ -494,10 +494,10 @@ select, .input {
 .tree-empty { color: #334155; }
 
 /* ── Narrow screens ──
-   The inspector joins the page flow, the palette becomes a menu bar of
-   categories, and the status panel is a bar fixed to the bottom. */
+   The inspector joins the page flow and the palette becomes a menu bar of
+   categories. (demo.css turns the status panel into a bottom bar.) */
 @media (max-width: 1000px) {
-  body.flow-page { padding: 1rem 16px calc(84px + env(safe-area-inset-bottom)); }
+  body.flow-page { padding: 1rem 16px; }
   .inspector { position: static; width: auto; margin-top: 0.8rem; }
   .flow-layout { grid-template-columns: 1fr; height: auto; }
   .canvas { height: 460px; }
@@ -562,39 +562,4 @@ select, .input {
     cursor: pointer;
   }
 
-  body.flow-page .status-panel {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    z-index: 30;
-    width: auto;
-    margin: 0;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 2px 10px;
-    padding: 0.55rem 0.9rem calc(0.55rem + env(safe-area-inset-bottom));
-    border-width: 1px 0 0;
-    border-radius: 12px 12px 0 0;
-  }
-
-  body.flow-page .status-panel h2 { display: none; }
-  body.flow-page .status-panel .step-type-badge { grid-row: 1; grid-column: 1; margin: 0; }
-  body.flow-page .status-panel .stat-row { margin: 0; min-width: 0; }
-  body.flow-page .status-panel .stat-label { display: none; }
-  body.flow-page .status-panel .stat-row:has(#step-name) { grid-row: 1; grid-column: 2; }
-  body.flow-page .status-panel .stat-row:has(#callable-name) { grid-row: 2; grid-column: 1 / -1; }
-  body.flow-page .status-panel .stat-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  body.flow-page .status-panel .stat-row:has(#callable-name) .stat-value { font-size: 0.72rem; color: #94a3b8; }
-  body.flow-page .status-panel .counter {
-    grid-row: 1;
-    grid-column: 3;
-    margin: 0;
-    padding: 0;
-    border: none;
-    font-size: 0.66rem;
-    white-space: nowrap;
-  }
 }
