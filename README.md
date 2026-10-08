@@ -6,7 +6,7 @@ The demos use micro-flow **3.1.1**.
 
 ## Running the demos
 
-You need [Node.js](https://nodejs.org/) 18 or newer.
+You need [Node.js](https://nodejs.org/) 24 or newer.
 
 ```sh
 npm install
@@ -66,7 +66,7 @@ Things to know:
 
 Every demo has a **Workflow Status** panel in the top right that shows the step that's running, its type and what it's doing.
 
-The first five demos run their workflows in your browser. **link-checker** and **job-scheduler** run theirs on the server: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
+The first seven demos run their workflows in your browser. **link-checker** and **job-scheduler** run theirs on the server: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
 
 **On phones and tablets** the demos fit the screen width. The arenas scale down as a whole, and side-by-side panels stack. Below about 1200px wide the status panels move under the demo instead of covering it. On phones the Workflow Status panel becomes a bar pinned to the bottom of the screen that shows the current step. Tap it to see the full panel.
 
@@ -113,6 +113,39 @@ The robot finds its own way to the goal with the A* search algorithm, on a layou
 - **Surprise walls** drop walls onto the path while the robot drives. When it hits one it stops and plans again from where it is. If the walls cut off the goal completely, the run ends as unreachable.
 - The **Mission workflow** panel shows the workflow tree and highlights each step as it runs.
 
+### flow-canvas (`/flow-canvas`)
+
+An n8n-style visual editor: drag nodes onto a canvas, wire them together and press **Run**. The graph is compiled into a tree of real micro-flow workflows and executed in your browser.
+
+- **Building:** drag a node from the palette onto the canvas (or click it to drop it in the middle). Drag from an output dot to another node to connect them. Drop a wire on empty space to pick a node to add and connect there, or double-click the canvas to add one. Drag a wire off an input dot to move or remove it. Drag the background to pan and scroll to zoom; **Fit** frames the whole flow.
+- **Editing:** click a node to edit it in the inspector on the right, under the status panel. Every node has a name (its micro-flow step name) and, under **Settings**, retries (`max_retries`) and a timeout (`max_timeout_ms`). Delete or Backspace removes the selected node or wire.
+- **Nodes and what they compile to:**
+  - **Manual Trigger** (output JSON) starts the flow; the whole graph becomes one root `Workflow`.
+  - **HTTP Request**, **Edit Fields**, **Transform**, **Random Number**, **Chaos Monkey** (fails some of the time) and **Display** (a card in the Output tab) are plain `Step`s.
+  - **If** is a `ConditionalStep` with a true and a false branch, and offers every micro-flow comparison operator except `custom_function`.
+  - **Switch** is a `SwitchStep` with one `Case` per output, plus a default.
+  - **Loop Over Items** is a `for_each` `LoopStep` and **Repeat** is a `for` `LoopStep`. Each has an *each* branch and a *done* output that gets the list of results.
+  - **Wait** is a relative `DelayStep`. **Stop If** and **Skip Next If** are `break` and `skip` `FlowControlStep`s; a Stop If inside a loop drops that item, like a filter.
+  - Every branch is a nested `Workflow`. An output wired to several nodes runs each branch in turn.
+- **Data:** each node gets the previous node's output. Text fields can use `{{ path }}` to read from it (for example `{{ types[0].type.name }}`), `{{ $item.x }}` for the current loop item and `{{ $trigger.x }}` for the trigger's output.
+- **Running:** **Run** (or Ctrl/Cmd + Enter), **Pause** (takes effect after the current top-level step) then **Resume**, and **Stop**. Nodes light up as their steps run, packets travel along the wires, branch outputs flash when taken, and badges show run counts, loop passes, retries and times. **Stop on first error** sets `exit_on_error` on every workflow; turn it off and a failed step is logged and the flow carries on.
+- **Tabs:** **Output** (Display cards), **Execution log** (micro-flow events), **Node data** (the selected node's last input and output), **Compiled micro-flow** (the generated workflow tree, including the small hidden helper steps around loops) and **serialize()**.
+- **Templates:** Pokémon type sorter, Weather board, Dog gallery and Flaky API (retries and a filter). The first three call public APIs (PokeAPI, Open-Meteo, dog.ceo), so they need an internet connection.
+- Your flow is saved in the browser automatically. **Share** copies a link with the flow in it, and **Clear** starts over.
+- **On a phone or narrow window:** the palette becomes a menu bar of categories. Tap one to open its nodes, then tap a node to add it to the middle of the canvas. Touch works for dragging nodes and wires.
+
+### diner-rush (`/diner-rush`)
+
+A short kitchen shift where every ticket is its own micro-flow workflow, all running at the same time, and some steps can only finish when you click.
+
+- Pick a shift length and press **Start shift**. Customers walk in faster as the shift goes on, and the doors close when the clock runs out (an absolute `DelayStep`). Open tickets still have to be finished.
+- **Stations:** the grill and the fryer have two slots each and the shake machine has one. Items wait in line for a free slot.
+- **Your jobs:** when a burger or fries are done, press **Plate it** or **Basket up** before the red bar runs out. That window is the step's `max_timeout_ms`. If you miss it, the step times out and micro-flow retries it once (**Save it!**), and the food comes out charred or soggy. Miss that too and the dish is ruined. When the shake machine jams, **Kick it** to clear the jam before the retry; otherwise it may jam again (up to 3 retries).
+- **Patience:** each customer's patience is the `max_timeout_ms` of their ticket's cooking loop. If it runs out, they walk out.
+- **Tickets:** a ticket shows each item, a patience bar and the workflow's progress (from `result_per_step_function`). **86 it** cancels a ticket. A reservation pauses its own workflow until you press **Seat them**, which resumes it. Now and then a customer adds a shake to a ticket that's already cooking, and the page inserts a new step into the running workflow.
+- After cooking, a `ConditionalStep` adds a 30% tip if every item was perfect, and a `skip` `FlowControlStep` only offers pie to customers who are still happy.
+- The **Kitchen feed** is built from micro-flow events, and the end-of-shift summary is read from each ticket's `sessions`.
+
 ### link-checker (`/link-checker`)
 
 The server checks a list of URLs for you. Your browser can't read most sites directly because they don't allow cross-origin requests, but the server can.
@@ -143,7 +176,7 @@ Schedule jobs that run on the server at a set time.
 
 1. Create `pages/<name>.html`. Copy the `<head>` (stylesheet link and import map) and the status panel markup from an existing page. If the arena's contents are positioned in pixels inside the 640×400 box, add `data-fit` to the `.arena` element so it scales down on phones.
 2. Put the demo's script in `public/js/<name>.js`, and any demo-specific styles in `public/css/<name>.css`.
-3. Add a card for it to `pages/index.html`.
+3. Add a card for it to `pages/index.html`, keeping the cards in alphabetical order.
 4. Restart the server, which registers routes when it starts, and describe the demo in this README.
 
 ## License
