@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A set of browser demos for the [`@ronaldroe/micro-flow`](https://www.npmjs.com/package/@ronaldroe/micro-flow) workflow library, pinned to **3.1.1**. Every demo runs its micro-flow workflow entirely in the browser. The Express server only serves HTML pages and static assets. There is no test suite or linter (`npm test` is the default npm placeholder and always fails).
+A set of browser demos for the [`@ronaldroe/micro-flow`](https://www.npmjs.com/package/@ronaldroe/micro-flow) workflow library, pinned to **4.0.0** (the same code as 3.1.1; 4.0.0 only raised the Node requirement to 24). Every demo runs its micro-flow workflow entirely in the browser. The Express server only serves HTML pages and static assets. There is no test suite or linter (`npm test` is the default npm placeholder and always fails).
 
 ## Commands
 
@@ -76,7 +76,7 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **link-check:** resolves every host (and every redirect hop, followed manually) and blocks private, loopback and link-local addresses (SSRF guard). Keep that guard on any new server-side fetching.
 - **State:** jobs are in memory and capped (link-check: 25 kept, 3 running; scheduler: 30 waiting, 5–120 s delays, finished jobs expire after 30 minutes). A server restart, including a nodemon reload, clears them.
 
-**micro-flow 3.1.x behaviour the demos depend on:**
+**micro-flow behaviour the demos depend on (3.1.x and 4.0.0):**
 - Inside a `LoopStep` callable, `this` is the step instance, so these must be `function` expressions, not arrow functions. `this.results.length` gives the iteration number (loop results reset on every run).
 - A `DelayStep` has no callable. To show its status, put a plain `Step` right before it (`announce-pause-*` in box-tour), and have that step report the DelayStep's name so the badge reads "DelayStep".
 - A `for_each` `LoopStep` calls a function `iterable` when the loop starts, so it can read data from earlier steps (`iterable: () => picked_ids` in pokemon-party). Inside the callable, the current item is `this.current_item`.

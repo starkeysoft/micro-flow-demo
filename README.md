@@ -2,7 +2,7 @@
 
 Interactive browser demos for [micro-flow](https://www.npmjs.com/package/@ronaldroe/micro-flow), a lightweight workflow orchestration library. Each demo runs its micro-flow workflow entirely in the browser. The small Express server only serves the pages, and bundles micro-flow for the browser at startup.
 
-The demos use micro-flow **3.1.1**.
+The demos use micro-flow **4.0.0**.
 
 ## Running the demos
 
