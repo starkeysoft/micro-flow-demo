@@ -244,3 +244,10 @@ select {
   background: #0f1422;
   color: #c7d2fe;
 }
+
+/* The page keeps a right-hand gutter for the status panel down to 1000px, so
+   the panel stays in the corner where demo.css would otherwise move it into
+   the page flow (below 1200px). */
+@media (min-width: 1001px) and (max-width: 1199px) {
+  body.diner-page .status-panel { position: fixed; width: 260px; margin: 0; }
+}

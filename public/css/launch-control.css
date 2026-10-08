@@ -7,8 +7,7 @@ body.launch-page {
 
 /* ── Resume banner ── */
 .banner {
-  width: 640px;
-  max-width: 100%;
+  width: min(640px, 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -288,8 +287,7 @@ body.launch-page {
 
 /* ── Controls ── */
 .controls {
-  width: 640px;
-  max-width: 100%;
+  width: min(640px, 100%);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -333,8 +331,7 @@ body.launch-page {
 
 /* ── Timeline + log panels ── */
 .panels {
-  width: 640px;
-  max-width: 100%;
+  width: min(640px, 100%);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
@@ -427,8 +424,7 @@ body.launch-page {
 
 /* ── Observer ── */
 .observer-note {
-  width: 640px;
-  max-width: 100%;
+  width: min(640px, 100%);
   margin-bottom: 1rem;
   font-size: 0.8rem;
   line-height: 1.5;
@@ -439,10 +435,11 @@ body.launch-page {
 .observer-note code { color: #a5b4fc; font-size: 0.75rem; }
 .observer-note a { color: #60a5fa; }
 
-/* phones: the scene is scaled to fit (fit-arena.js) and the panels stack */
 @media (max-width: 700px) {
-  .panels { grid-template-columns: 1fr; }
-  .banner { flex-direction: column; align-items: flex-start; }
+  .panels { grid-template-columns: minmax(0, 1fr); }
+  .timeline, .log { height: 220px; }
+  .banner { flex-wrap: wrap; }
+  .observer-link { margin-left: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

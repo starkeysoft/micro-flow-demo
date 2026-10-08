@@ -173,6 +173,7 @@
 
 @media (max-width: 700px) {
   .board { grid-template-columns: 1fr; }
+  .column { min-height: 6rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

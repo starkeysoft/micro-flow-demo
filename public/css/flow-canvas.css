@@ -495,7 +495,7 @@ select, .input {
 
 /* ── Narrow screens ──
    The inspector joins the page flow and the palette becomes a menu bar of
-   categories. (demo.css turns the status panel into a bottom bar.) */
+   categories. (demo.css handles the status panel: page flow below 1200px, bottom bar at 700px.) */
 @media (max-width: 1000px) {
   body.flow-page { padding: 1rem 16px; }
   .inspector { position: static; width: auto; margin-top: 0.8rem; }
@@ -562,4 +562,11 @@ select, .input {
     cursor: pointer;
   }
 
+}
+
+/* This page keeps a right-hand column (status panel + inspector) down to
+   1000px, so the status panel stays in the corner where demo.css would
+   otherwise move it into the page flow (below 1200px). */
+@media (min-width: 1001px) and (max-width: 1199px) {
+  body.flow-page .status-panel { position: fixed; width: 260px; margin: 0; }
 }
