@@ -68,6 +68,8 @@ Every demo has a **Workflow Status** panel in the top right that shows the step 
 
 The first five demos run their workflows in your browser. **link-checker** and **job-scheduler** run theirs on the server: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
 
+**On phones and tablets** the demos fit the screen width. The arenas scale down as a whole, and side-by-side panels stack. Below about 1200px wide the status panels move under the demo instead of covering it. On phones the Workflow Status panel becomes a bar pinned to the bottom of the screen that shows the current step. Tap it to see the full panel.
+
 ### box-tour (`/box-tour`)
 
 A box moves around the edge of the arena in a loop, driven by `Step`, `LoopStep`, `DelayStep` and `ConditionalStep`. From the second lap on, a conditional step makes the box flash. There's nothing to set; just watch.
@@ -134,12 +136,12 @@ Schedule jobs that run on the server at a set time.
 
 - `server.js` serves every `pages/<name>.html` at `/<name>` (and `pages/index.html` at `/`), plus the files in `public/`.
 - micro-flow is published for Node, so at startup `lib/bundle-micro-flow.js` uses esbuild to bundle it into a single browser module, served at `/vendor/micro-flow.js`. Each page maps `micro-flow` to that file with an import map, so demo code uses `import { Workflow } from 'micro-flow'`.
-- Shared styles are in `public/css/demo.css`, and the shared status panel code is in `public/js/status-panel.js`.
+- Shared styles are in `public/css/demo.css`, and the shared status panel code is in `public/js/status-panel.js`. That code also makes the panel tappable on phones and calls `public/js/fit-arena.js`, which scales arenas marked `data-fit` down to the screen width with CSS `zoom`.
 - The server-side demos' API lives in `api/`. Their workflows use micro-flow straight from `node_modules`, and `api/server-status.js` streams their events to the page's Server Status panel over Server-Sent Events (`/api/server-status/stream?demo=…`).
 
 ## Adding a demo
 
-1. Create `pages/<name>.html`. Copy the `<head>` (stylesheet link and import map) and the status panel markup from an existing page.
+1. Create `pages/<name>.html`. Copy the `<head>` (stylesheet link and import map) and the status panel markup from an existing page. If the arena's contents are positioned in pixels inside the 640×400 box, add `data-fit` to the `.arena` element so it scales down on phones.
 2. Put the demo's script in `public/js/<name>.js`, and any demo-specific styles in `public/css/<name>.css`.
 3. Add a card for it to `pages/index.html`.
 4. Restart the server, which registers routes when it starts, and describe the demo in this README.
