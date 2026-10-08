@@ -54,6 +54,17 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **Surprise walls:** walls that drop onto the path make `follow-path` stop early. `until-arrived` then re-runs `plan-and-drive` from the robot's position.
 - **Session cleanup:** as in robot-builder, nested bodies clear their `sessions` after each run.
 
+**flow-canvas demo** (`public/js/flow-canvas.js` editor/UI, `flow-nodes.js` node catalogue, `flow-compile.js` graph → workflows, `flow-templates.js` starter flows): an n8n-style editor. The graph is `{ name, nodes: [{ id, type, name, x, y, config, settings }], edges: [{ id, from, port, to }], options }`, saved to `localStorage` and share links (`#g=`).
+- **Compile:** `compileGraph()` walks from the single trigger. Action nodes are `Step`s that store their output in `ctx.out` (keyed by step id); the next node's `inputFn` reads it. If/Switch/Loop/Repeat become `ConditionalStep`/`SwitchStep`+`Case`/`LoopStep`s whose branches are nested `Workflow`s; fan-out wraps each branch in a `Step` with a `Workflow` callable. Loop bodies get hidden `·` steps (item, collect) so a `break` drops the item; Repeat/Loop also get hidden start/done steps. `steps` and `bodies` map compiled ids back to nodes for the event-driven highlighting.
+- Action steps return a tiny summary, never the node output: every event payload embeds step results.
+- Node templates `{{ path }}` read the input; `$item` and `$trigger` are the other roots. There is no code node (no `eval`).
+- Adding a node type: add it to `NODE_TYPES` (`kind` decides how `flow-compile.js` builds it) and, for a new `kind`, a case in `chain()`.
+
+**diner-rush demo** (`public/js/diner-rush.js`): a game where every ticket is a separate `Workflow`, all running concurrently, started from a `generator` `LoopStep` in the `shift` workflow. A second `closing time` workflow (absolute `DelayStep`) closes the doors.
+- **Human steps:** a step's callable awaits a promise that a button click resolves (`humanTask()`); its window is `max_timeout_ms` and the last chance is `max_retries: 1`. `step_retrying`/`step_failed` listeners clear the stale button.
+- **Patience** is the `max_timeout_ms` of the ticket's `for_each` loop. A timeout doesn't cancel the callable, so `closeOrder()` sets `order.closed`, rejects pending tasks and frees station slots; callables call `alive(order)` to stop.
+- Reservations call `order.workflow.pause()` from their first step and the Seat button calls `resume()`. "Add a shake" inserts a step into a running ticket with `addStepAtIndex()`.
+
 **Backend demos** (link-checker, job-scheduler): the workflows run in Node on the server. The pages call REST endpoints and depend on the responses, and a second **Server Status** panel shows the server's workflow activity.
 - **`api/*.js`:** Express routers mounted under `/api` in `server.js` (after `express.json()`). They import micro-flow directly from `@ronaldroe/micro-flow`, a separate instance from the browser bundle, so absolute `DelayStep`s use native `node-schedule`. `server.js` sets `State.set('log_suppress', true)` to keep micro-flow out of the server console.
 - **`api/server-status.js`:** subscribes once to every server event and forwards a **small summary** (never the full payload) to SSE clients at `/api/server-status/stream?demo=<name>`. Call `track(workflow_or_step, demo, job, { top })` on anything a demo creates so its events are tagged (steps match by id or `parent_workflow_id`), and `forget()` when a job is dropped. New connections get the demo's last 12 events, then a `hello` with the active count.
@@ -71,7 +82,7 @@ Each page declares an import map (`"micro-flow": "/vendor/micro-flow.js"`), so d
 - **Serialization:** function-valued condition subjects and values, `SwitchStep.subject`, function iterables and `result_per_step_function` are saved **by function name** (`conditional_callables`, `subject_callable`, `iterable_callable`) and resolved from the `CallableRegistry` on hydrate. Unnamed or unregistered functions come back `null`, with a console warning.
 - **Instance state is never serialized, by design.** `setState` data is runtime-only. Anything a restored workflow needs must be saved alongside `serialize()` and written back with `setState` after hydrating (launch-control's checkpoints do this).
 - **`sessions` grow without limit** and are embedded in every snapshot of a workflow (loop and step results, event payloads). A workflow run many times as a nested body should have its `sessions` cleared, and emitted snapshots should leave out `sessions`/`results`.
-- **Events:** retries emit `step_retrying` (with `retry_count`). `workflow_paused` fires once, when the workflow has stopped. `workflow_step_skipped` and `workflow_break_executed` carry `{ workflow, step }`.
+- **Events:** retries emit `step_retrying` (with `retry_count`). `workflow_paused` fires once, when the workflow has stopped; its payload (like `workflow_resumed`/`workflow_pause_requested`) is the workflow's state, `{ workflow }`, not the workflow itself. Errors in payloads serialize to `{}`, so read messages from the live step's `errors`. `workflow_step_skipped` and `workflow_break_executed` carry `{ workflow, step }`.
 - micro-flow writes every step event to the browser console. The only way to turn this off is the deprecated `State.set('log_suppress', true)`.
 
 ## README

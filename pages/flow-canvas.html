@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/flow-canvas.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="flow-page">
+
+  <h1>micro-flow &mdash; flow canvas demo</h1>
+
+  <div class="toolbar">
+    <button class="button" id="run" type="button" title="Ctrl/Cmd + Enter">Run</button>
+    <button class="button ghost" id="pause" type="button" disabled>Pause</button>
+    <button class="button ghost" id="stop" type="button" disabled>Stop</button>
+    <span class="toolbar-gap"></span>
+    <label class="tool">
+      <span class="stat-label">Template</span>
+      <select id="template"></select>
+    </label>
+    <label class="tool check">
+      <input type="checkbox" id="exit-on-error" checked />
+      <span class="stat-label">Stop on first error</span>
+    </label>
+    <span class="toolbar-gap"></span>
+    <button class="button ghost" id="fit" type="button">Fit</button>
+    <button class="button ghost" id="clear" type="button">Clear</button>
+    <button class="button ghost" id="share" type="button">Share</button>
+  </div>
+
+  <div class="flow-layout">
+    <aside class="palette" id="palette" aria-label="Nodes"></aside>
+
+    <div class="canvas" id="canvas" tabindex="0">
+      <div class="world" id="world">
+        <svg class="wires" id="wires" width="1" height="1" aria-hidden="true"></svg>
+        <div class="nodes" id="nodes"></div>
+      </div>
+      <div class="canvas-hint" id="hint">
+        Drag nodes in from the left · drag from an output dot to an input dot to connect ·
+        drop a wire on empty space to add a node there · drag the background to pan, scroll to zoom
+      </div>
+      <div class="canvas-error" id="canvas-error" hidden></div>
+      <div class="quick-add" id="quick-add" hidden></div>
+    </div>
+  </div>
+
+  <section class="drawer">
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab active" data-tab="output">Output</button>
+      <button type="button" class="tab" data-tab="log">Execution log</button>
+      <button type="button" class="tab" data-tab="data">Node data</button>
+      <button type="button" class="tab" data-tab="tree">Compiled micro-flow</button>
+      <button type="button" class="tab" data-tab="json">serialize()</button>
+    </nav>
+    <div class="tab-body" data-body="output"><div class="cards" id="cards"><p class="empty">Run the flow to see Display cards here.</p></div></div>
+    <div class="tab-body" data-body="log" hidden><ol class="log" id="log"></ol></div>
+    <div class="tab-body" data-body="data" hidden><div class="node-data" id="node-data"><p class="empty">Select a node after a run to see its last input and output.</p></div></div>
+    <div class="tab-body" data-body="tree" hidden><div class="tree" id="tree"></div></div>
+    <div class="tab-body" data-body="json" hidden><pre class="json" id="json"></pre></div>
+  </section>
+
+  <!-- Inspector (sits under the status panel) -->
+  <aside class="inspector" id="inspector"></aside>
+
+  <!-- Status panel -->
+  <div class="status-panel" id="status-panel">
+    <h2>Workflow Status</h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">
+      Runs: <span id="run-count">0</span> ·
+      Steps run: <span id="step-count">0</span>
+    </div>
+  </div>
+
+  <script type="module" src="/js/flow-canvas.js"></script>
+</body>
+</html>
