@@ -17,6 +17,9 @@
     "express": "^5.2.1"
   },
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "devDependencies": {
     "nodemon": "^3.1.14"
   }
