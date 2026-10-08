@@ -82,7 +82,7 @@ body.robot-page {
 
 /* ── Controls ── */
 .controls {
-  width: 640px;
+  width: min(640px, 100%);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -106,7 +106,7 @@ select, .block-input {
 
 /* ── Panels ── */
 .panel {
-  width: 640px;
+  width: min(640px, 100%);
   border: 1px solid #1e293b;
   border-radius: 12px;
   background: #13192a;
@@ -131,7 +131,7 @@ select, .block-input {
 }
 
 .lower {
-  width: 640px;
+  width: min(640px, 100%);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
@@ -294,6 +294,16 @@ select, .block-input {
   color: #a5b4fc;
   scrollbar-width: thin;
   scrollbar-color: #1e293b transparent;
+}
+
+@media (max-width: 700px) {
+  .lower { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* bigger touch targets in the block editor */
+@media (pointer: coarse) {
+  .icon-button, .text-button { min-width: 32px; min-height: 32px; }
+  select, .block-input { min-height: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -141,6 +141,10 @@
 
 .pathfinder .runs { max-height: 180px; }
 
+@media (max-width: 700px) {
+  .pathfinder-lower { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cell.cell-wall.surprise { animation: none; }
   .pathfinder .world .cell, .tree-step { transition: none; }
