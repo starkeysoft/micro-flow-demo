@@ -27,7 +27,40 @@ npx nodemon server.js
 docker compose up --build
 ```
 
-Then open http://localhost:8082. The container copies the source when the image is built, so run `docker compose up --build` again after changing any files.
+Then open http://localhost:8082. The container runs `npm start` and copies the source when the image is built, so run `docker compose up --build` again after changing any files.
+
+## Deploying (Tailscale Funnel)
+
+The backend demos need a long-running Node process, so the demos are hosted from your own machine and exposed to the public internet with [Tailscale Funnel](https://tailscale.com/kb/1223/funnel). It's free, needs no domain, and makes only outbound connections, so you don't need to open any ports. The site is served at `https://micro-flow.<your-tailnet>.ts.net`.
+
+One-time setup in the [Tailscale admin console](https://login.tailscale.com/admin):
+
+1. **DNS:** make sure MagicDNS is on and enable **HTTPS Certificates**. Rename the tailnet first if you want a friendlier URL.
+2. **Access controls:** add a tag and let it use Funnel:
+
+   ```json
+   "tagOwners": { "tag:container": ["autogroup:admin"] },
+   "nodeAttrs": [{ "target": ["tag:container"], "attr": ["funnel"] }],
+   ```
+
+3. **Settings → Keys:** generate a reusable auth key tagged `tag:container`.
+4. Copy `.env.example` to `.env` and paste in the key: `TS_AUTHKEY=tskey-auth-...`. `.env` is git-ignored.
+
+Then start the app and Funnel:
+
+```sh
+docker compose --profile funnel up -d --build
+docker compose exec tailscale tailscale funnel status
+```
+
+The second command prints the public URL. Plain `docker compose up` still runs only the app. Both containers restart automatically, including after a reboot. The Tailscale login is kept in the `tailscale-state` volume, so the auth key is only used the first time. `tailscale/serve.json` sends public port 443 to the app.
+
+Things to know:
+
+- The site is up only while your machine and the containers are running.
+- Backend jobs are kept in memory, so a restart clears them.
+- The job limits are shared by every visitor, not set per visitor.
+- link-checker blocks private and loopback addresses, so the public site can't be used to probe your local network.
 
 ## The demos
 

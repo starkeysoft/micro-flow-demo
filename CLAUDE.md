@@ -10,7 +10,8 @@ A set of browser demos for the [`@ronaldroe/micro-flow`](https://www.npmjs.com/p
 
 - `npm install`, then `npm start`: runs `node server.js` on http://localhost:8081
 - `npx nodemon server.js`: the same, but restarts when server-side `.js` files change (`nodemon` is a dev dependency)
-- `docker compose up --build`: runs `nodemon` in a container and maps host port **8082** to container port 8081. The image copies the source at build time, so code changes need a rebuild.
+- `docker compose up --build`: runs `npm start` in a container and maps host port **8082** to container port 8081. The image copies the source at build time, so code changes need a rebuild.
+- `docker compose --profile funnel up -d --build`: also starts a `tailscale` container that exposes the app publicly through Tailscale Funnel at `https://micro-flow.<tailnet>.ts.net`. This is how the site is deployed. It needs `TS_AUTHKEY` in a git-ignored `.env` (see `.env.example`), and the key must be tagged `tag:container`, which the tailnet policy allows to use Funnel. `tailscale/serve.json` proxies port 443 to `http://micro-flow-demo:8081`. The node's login persists in the `tailscale-state` volume. Because the site is public, keep the backend demos' SSRF guard and job caps.
 
 The project is ESM (`"type": "module"`) and uses Express 5.
 

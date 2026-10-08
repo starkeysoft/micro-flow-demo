@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8081
 
-CMD ["npx", "nodemon", "server.js"]
+CMD ["npm", "start"]

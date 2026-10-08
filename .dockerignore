@@ -6,3 +6,6 @@ Dockerfile
 docker-compose.yml
 .dockerignore
 CLAUDE.md
+.env
+.env.example
+tailscale
