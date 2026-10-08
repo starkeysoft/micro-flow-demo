@@ -168,13 +168,14 @@ Schedule jobs that run on the server at a set time.
 - `server.js` serves every `pages/<name>.html` at `/<name>` (and `pages/index.html` at `/`), plus the files in `public/`.
 - micro-flow is published for Node, so at startup `lib/bundle-micro-flow.js` uses esbuild to bundle it into a single browser module, served at `/vendor/micro-flow.js`. Each page maps `micro-flow` to that file with an import map, so demo code uses `import { Workflow } from 'micro-flow'`.
 - Shared styles are in `public/css/demo.css`, and the shared status panel code is in `public/js/status-panel.js`.
+- Every demo works on a phone. Pages reflow to the screen width, and arenas whose contents are positioned in pixels are scaled down to fit by `public/js/fit-arena.js`.
 - The server-side demos' API lives in `api/`. Their workflows use micro-flow straight from `node_modules`, and `api/server-status.js` streams their events to the page's Server Status panel over Server-Sent Events (`/api/server-status/stream?demo=…`).
 
 ## Adding a demo
 
 1. Create `pages/<name>.html`. Copy the `<head>` (stylesheet link and import map) and the status panel markup from an existing page.
 2. Put the demo's script in `public/js/<name>.js`, and any demo-specific styles in `public/css/<name>.css`.
-3. Add a card for it to `pages/index.html`.
+3. Add a card for it to `pages/index.html`, keeping the cards in alphabetical order.
 4. Restart the server, which registers routes when it starts, and describe the demo in this README.
 
 ## License

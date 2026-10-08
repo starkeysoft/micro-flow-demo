@@ -293,6 +293,9 @@ h1 {
    from covering the end of the content. The backend demos' Server Status
    panel joins the page flow instead. */
 @media (max-width: 1000px) {
+  /* side gutters for pages that don't set their own padding */
+  body { padding-left: 16px; padding-right: 16px; }
+
   body::after {
     content: '';
     display: block;
