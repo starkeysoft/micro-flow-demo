@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/backend.css" />
+  <link rel="stylesheet" href="/css/order-saga.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="backend-page">
+
+  <h1>micro-flow &mdash; order saga demo</h1>
+
+  <p class="backend-note">
+    Placing an order touches five mock services on the <strong>server</strong>: orders, inventory,
+    payments, shipping and email. Each step that succeeds records how to undo itself. When a later
+    step fails, a compensation workflow is built from those records and run in reverse. Stock and
+    the payments ledger are shared by everyone on this page.
+  </p>
+
+  <section class="panel">
+    <h2>Place an order <span class="panel-note">POST /api/saga/orders</span></h2>
+    <form id="order-form">
+      <ul class="products" id="products">
+        <li class="empty">Loading products…</li>
+      </ul>
+
+      <div class="order-options">
+        <label class="field">
+          <span class="stat-label">Card</span>
+          <select id="card">
+            <option value="4242424242424242">4242 4242 4242 4242 · succeeds</option>
+            <option value="4000000000000119">4000 0000 0000 0119 · gateway timeouts, then OK</option>
+            <option value="4000000000000002">4000 0000 0000 0002 · declined</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="stat-label">Ship to</span>
+          <select id="region">
+            <option value="eu">Europe</option>
+            <option value="na">North America</option>
+            <option value="aq">Antarctica (no carrier)</option>
+          </select>
+        </label>
+      </div>
+
+      <fieldset class="faults">
+        <legend class="stat-label">Inject faults</legend>
+        <label><input type="checkbox" name="slow_carrier" /> Slow carrier <em>shipping times out</em></label>
+        <label><input type="checkbox" name="orders_db_down" /> Orders DB down <em>fails at confirm</em></label>
+        <label><input type="checkbox" name="email_down" /> Email down <em>non-critical</em></label>
+        <label><input type="checkbox" name="inventory_down_on_undo" /> Inventory down during undo <em>compensation fails</em></label>
+      </fieldset>
+
+      <div class="order-actions">
+        <button class="button" id="place" type="submit">Place order</button>
+        <span class="order-total" id="order-total">$0.00</span>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2 class="with-action">Services <span class="panel-note">GET /api/saga/state</span>
+      <button class="text-link" id="restock" type="button">restock</button>
+    </h2>
+    <div class="services">
+      <div>
+        <div class="services-label">Inventory <span>on hand · <i class="key-reserved"></i> reserved</span></div>
+        <ul class="stock" id="stock"></ul>
+      </div>
+      <div>
+        <div class="services-label">Payments &amp; shipping</div>
+        <dl class="ledger" id="ledger"></dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Saga timeline <span class="panel-note" id="timeline-note">place an order to see it</span></h2>
+    <div class="outcome" id="outcome" hidden></div>
+    <div class="timeline-wrap">
+      <ol class="lanes" aria-hidden="true">
+        <li>Orders</li><li>Inventory</li><li>Payments</li><li>Shipping</li><li>Email</li>
+      </ol>
+      <div class="timeline-scroll">
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+    <ul class="legend">
+      <li class="forward">forward</li>
+      <li class="retry">retry</li>
+      <li class="error">error</li>
+      <li class="compensate">compensation</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Recent orders <span class="panel-note">everyone's, newest first</span></h2>
+    <ol class="recent" id="recent">
+      <li class="empty">No orders yet.</li>
+    </ol>
+  </section>
+
+  <!-- Status panel (this page's client-side workflow) -->
+  <div class="status-panel">
+    <h2>Workflow Status <span class="panel-tag">browser</span></h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">Orders placed from this tab: <span id="placed-count">0</span></div>
+  </div>
+
+  <script type="module" src="/js/order-saga.js"></script>
+</body>
+</html>

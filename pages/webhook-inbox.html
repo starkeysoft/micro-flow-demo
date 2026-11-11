@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/backend.css" />
+  <link rel="stylesheet" href="/css/webhook-inbox.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="backend-page">
+
+  <h1>micro-flow &mdash; webhook inbox demo</h1>
+
+  <p class="backend-note">
+    A fictional payment provider, Paystream, sends signed webhooks to the <strong>server</strong>.
+    The receiver checks the signature, drops duplicates and acks right away. Two worker workflows
+    then drain the queue, and each event runs in its own workflow. Everyone shares one inbox.
+  </p>
+
+  <section class="panel console-panel">
+    <h2>Paystream console <span class="panel-note">POST /api/webhooks/simulate</span></h2>
+    <div class="console-row" id="event-buttons" aria-label="Send an event"></div>
+    <div class="console-row">
+      <button class="button ghost small" type="button" data-mode="duplicate" title="Resend the last event with the same id">Duplicate last</button>
+      <button class="button ghost small" type="button" data-mode="tampered" title="Change the body after signing it">Tampered</button>
+      <button class="button ghost small" type="button" data-mode="stale" title="Sign with a timestamp 10 minutes old">Stale</button>
+      <button class="button ghost small" type="button" data-mode="burst" title="Eight random events at once">Burst &times;8</button>
+    </div>
+    <div class="console-row toggles">
+      <label class="toggle"><input type="checkbox" id="crm_outage" /> CRM outage <span class="toggle-note">sync-crm returns 503</span></label>
+      <label class="toggle"><input type="checkbox" id="flaky_email" /> Flaky email <span class="toggle-note">~40% of sends fail</span></label>
+    </div>
+    <p class="response-line" id="response-line">Send an event to see the receiver's response.</p>
+
+    <details class="own-request">
+      <summary>Send your own with curl</summary>
+      <p class="own-note">
+        The receiver is a real endpoint. Sign <code>&lt;timestamp&gt;.&lt;body&gt;</code> with HMAC-SHA256 and
+        the demo secret <code id="secret">whsec_demo_microflow</code>, and send it in the
+        <code>paystream-signature</code> header as <code>t=&lt;timestamp&gt;,v1=&lt;hex&gt;</code>.
+      </p>
+      <pre class="curl" id="curl"></pre>
+      <button class="button ghost small" id="copy-curl" type="button">Copy</button>
+    </details>
+  </section>
+
+  <section class="panel workers-panel">
+    <h2>Workers <span class="panel-note">2 workflows, each a while loop over the queue</span></h2>
+    <div class="lanes" id="lanes"></div>
+    <div class="queue">
+      <span class="stat-label">Queue <b id="queue-depth">0</b>/30</span>
+      <ol class="queue-chips" id="queue-chips"></ol>
+    </div>
+  </section>
+
+  <section class="panel dead-panel" id="dead-panel">
+    <h2>Dead letter <span class="panel-note">failed after retries</span></h2>
+    <ol class="dead-list" id="dead-list"><li class="empty">Nothing here. Turn on CRM outage and send customer.updated.</li></ol>
+  </section>
+
+  <section class="panel log-panel">
+    <h2>Deliveries <span class="panel-note">GET /api/webhooks/state</span>
+      <button class="text-link" id="clear-log" type="button">clear finished</button>
+    </h2>
+    <ol class="log" id="log"><li class="empty">No deliveries yet.</li></ol>
+  </section>
+  <p class="board-source" id="source">GET /api/webhooks/state</p>
+
+  <!-- Status panel (this page's client-side workflow) -->
+  <div class="status-panel">
+    <h2>Workflow Status <span class="panel-tag">browser</span></h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">Events sent from this tab: <span id="sent-count">0</span></div>
+  </div>
+
+  <script type="module" src="/js/webhook-inbox.js"></script>
+</body>
+</html>

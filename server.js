@@ -7,6 +7,9 @@ import { bundleMicroFlow } from './lib/bundle-micro-flow.js';
 import { router as serverStatusRouter } from './api/server-status.js';
 import { router as linkCheckRouter } from './api/link-check.js';
 import { router as schedulerRouter } from './api/scheduler.js';
+import { router as etlRouter } from './api/etl.js';
+import { router as webhooksRouter } from './api/webhooks.js';
+import { router as sagaRouter } from './api/saga.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pages_dir = path.join(__dirname, 'pages');
@@ -19,8 +22,9 @@ const app = express();
 State.set('log_suppress', true);
 
 // Backend demos: micro-flow workflows that run on the server (see api/).
-app.use(express.json({ limit: '32kb' }));
-app.use('/api', serverStatusRouter, linkCheckRouter, schedulerRouter);
+// The verify hook keeps the raw bytes for webhook-inbox's signature check.
+app.use(express.json({ limit: '32kb', verify: (req, res, buf) => { req.raw_body = buf; } }));
+app.use('/api', serverStatusRouter, linkCheckRouter, schedulerRouter, etlRouter, webhooksRouter, sagaRouter);
 
 // micro-flow, bundled for the browser once at startup. Pages load it through
 // the import map in their <head> as `import { ... } from 'micro-flow'`.

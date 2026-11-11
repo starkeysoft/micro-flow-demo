@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>micro-flow demo</title>
+  <link rel="stylesheet" href="/css/demo.css" />
+  <link rel="stylesheet" href="/css/backend.css" />
+  <link rel="stylesheet" href="/css/etl-pipeline.css" />
+  <script type="importmap">
+    { "imports": { "micro-flow": "/vendor/micro-flow.js" } }
+  </script>
+</head>
+<body class="backend-page">
+
+  <h1>micro-flow &mdash; ETL pipeline demo</h1>
+
+  <p class="backend-note">
+    A batch job on the <strong>server</strong>: extract a CSV, profile it, clean it in batches,
+    stop at a quality gate if too much is junk, then upsert it into a shared warehouse in chunks
+    that retry when a write fails. Run the same file twice and nothing changes the second time.
+  </p>
+
+  <section class="panel input-panel">
+    <h2>Source CSV <span class="panel-note">order_id, date, customer_email, country, amount, currency</span></h2>
+    <div class="samples">
+      <span class="stat-label">Samples</span>
+      <button class="chip-button" type="button" data-sample="messy">Messy orders</button>
+      <button class="chip-button" type="button" data-sample="clean">Clean orders</button>
+      <button class="chip-button" type="button" data-sample="broken">Broken header</button>
+      <span class="row-count" id="row-count"></span>
+    </div>
+    <textarea id="csv" rows="9" spellcheck="false" maxlength="24000"></textarea>
+    <div class="options">
+      <label class="field">
+        <span class="stat-label">Quality gate: reject at most <span id="threshold-label">20%</span></span>
+        <input id="threshold" type="range" min="0" max="50" step="5" value="20" />
+      </label>
+      <label class="check">
+        <input id="flaky" type="checkbox" />
+        <span>Flaky warehouse <span class="hint">(35% of chunk writes fail)</span></span>
+      </label>
+      <button class="button" id="run" type="button">Run pipeline</button>
+    </div>
+    <p class="request-line" id="request-line">POST /api/etl/runs</p>
+  </section>
+
+  <ol class="pipeline" id="pipeline" aria-label="Pipeline stages">
+    <li data-stage="extract"><b>extract</b><span>Step</span></li>
+    <li data-stage="profile"><b>profile</b><span>Step</span></li>
+    <li data-stage="transform"><b>transform</b><span>LoopStep › generator</span></li>
+    <li data-stage="gate"><b>quality gate</b><span>ConditionalStep</span></li>
+    <li data-stage="load"><b>load</b><span>LoopStep › for_each</span></li>
+    <li data-stage="report"><b>report</b><span>Step</span></li>
+  </ol>
+
+  <section class="panel results-panel">
+    <h2>Run <span class="panel-note" id="run-note">from GET /api/etl/runs/:id</span></h2>
+    <div class="counts" id="counts"></div>
+    <p class="run-error" id="run-error" hidden></p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" type="button" role="tab" data-tab="profile">Profile</button>
+      <button class="tab" type="button" role="tab" data-tab="rejects">Dead letter <span id="reject-count">0</span></button>
+      <button class="tab" type="button" role="tab" data-tab="loaded">Loaded</button>
+      <button class="tab" type="button" role="tab" data-tab="chunks">Load chunks</button>
+    </div>
+    <div class="tab-body" id="tab-profile"><p class="empty">Run the pipeline to profile the source.</p></div>
+    <div class="tab-body" id="tab-rejects" hidden><p class="empty">Rejected rows land here with the reason.</p></div>
+    <div class="tab-body" id="tab-loaded" hidden><p class="empty">A sample of the cleaned rows appears after a successful load.</p></div>
+    <div class="tab-body" id="tab-chunks" hidden><p class="empty">Each chunk is written by its own Step with up to 3 retries.</p></div>
+  </section>
+
+  <section class="panel warehouse-panel">
+    <h2>Warehouse <span class="panel-note">GET /api/etl/warehouse · shared by everyone</span>
+      <button class="text-link" id="truncate" type="button">truncate</button>
+    </h2>
+    <div class="warehouse-totals" id="warehouse-totals"></div>
+    <div class="bars" id="bars"></div>
+    <div class="table-wrap">
+      <table class="data-table" id="recent"></table>
+    </div>
+  </section>
+
+  <!-- Status panel (this page's client-side workflow) -->
+  <div class="status-panel">
+    <h2>Workflow Status <span class="panel-tag">browser</span></h2>
+    <div class="step-type-badge" id="step-type-badge">—</div>
+    <div class="stat-row">
+      <span class="stat-label">Step</span>
+      <span class="stat-value" id="step-name">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Callable</span>
+      <span class="stat-value" id="callable-name">—</span>
+    </div>
+    <div class="counter">Pipelines run: <span id="run-count">0</span></div>
+  </div>
+
+  <script type="module" src="/js/etl-pipeline.js"></script>
+</body>
+</html>

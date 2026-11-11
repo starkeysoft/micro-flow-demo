@@ -1,4 +1,4 @@
-/* Page frame shared by the backend demos (link-checker, job-scheduler). */
+/* Page frame shared by the backend demos. */
 
 body.backend-page {
   justify-content: flex-start;
