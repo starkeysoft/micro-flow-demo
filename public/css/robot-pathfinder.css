@@ -44,6 +44,7 @@
 /* controls */
 .control-inline { flex-direction: row; align-items: center; gap: 6px; }
 .control-inline input[type="checkbox"] { accent-color: #6366f1; }
+.control-inline:has(input:disabled) { opacity: 0.45; }
 .seed-row { display: flex; align-items: center; gap: 2px; }
 .seed-input { width: 6.5rem; font-family: 'Courier New', monospace; }
 

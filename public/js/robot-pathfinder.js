@@ -33,6 +33,7 @@ const layoutEl = $('layout');
 const heuristicEl = $('heuristic');
 const speedEl = $('speed');
 const surpriseEl = $('surprise');
+const fairEl = $('fair-walls');
 const planEl = $('plan');
 
 const status = createStatusPanel();
@@ -318,9 +319,29 @@ async function expandOne() {
 }
 
 // --- Driving ---
+// Flood fill from the robot: can it still get to the goal if `block` becomes a wall?
+function goalReachableWithout(block) {
+  const start = key(robot.x, robot.y);
+  const seen = new Set([start, key(block.x, block.y)]);
+  const queue = [[robot.x, robot.y]];
+  while (queue.length) {
+    const [x, y] = queue.shift();
+    if (x === GOAL.x && y === GOAL.y) return true;
+    for (const [dx, dy] of VECTORS) {
+      const nk = key(x + dx, y + dy);
+      if (isWall(x + dx, y + dy) || seen.has(nk)) continue;
+      seen.add(nk);
+      queue.push([x + dx, y + dy]);
+    }
+  }
+  return false;
+}
+
 function maybeDropWall(index) {
   if (!surpriseEl.checked || stats.surprises >= MAX_SURPRISES || Math.random() > SURPRISE_CHANCE) return;
-  const ahead = search.path.slice(index, index + 4).filter((c) => !(c.x === GOAL.x && c.y === GOAL.y));
+  let ahead = search.path.slice(index, index + 4).filter((c) => !(c.x === GOAL.x && c.y === GOAL.y));
+  // "Never block the goal": only drop walls that leave a way round.
+  if (fairEl.checked) ahead = ahead.filter(goalReachableWithout);
   if (!ahead.length) return;
   const cell = ahead[Math.floor(Math.random() * ahead.length)];
   grid[cell.y][cell.x] = true;
@@ -646,6 +667,7 @@ stopBtn.addEventListener('click', () => {
   stopped = true;
   setReadout('stopping…', 'warn');
 });
+surpriseEl.addEventListener('change', () => { fairEl.disabled = !surpriseEl.checked; });
 speedEl.addEventListener('input', () => { $('speed-ms').textContent = `${speedEl.value} ms`; });
 seedEl.addEventListener('change', applyLayout);
 layoutEl.addEventListener('change', applyLayout);

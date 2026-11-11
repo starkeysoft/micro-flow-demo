@@ -1,6 +1,6 @@
 # micro-flow demos
 
-Interactive browser demos for [micro-flow](https://www.npmjs.com/package/@ronaldroe/micro-flow), a lightweight workflow orchestration library. Each demo runs its micro-flow workflow entirely in the browser. The small Express server only serves the pages, and bundles micro-flow for the browser at startup.
+Interactive browser demos for [micro-flow](https://www.npmjs.com/package/@ronaldroe/micro-flow), a lightweight workflow orchestration library. Most demos run their micro-flow workflows entirely in the browser. The backend demos (link-checker, job-scheduler, etl-pipeline, order-saga and webhook-inbox) run theirs on the Express server, which also serves the pages and bundles micro-flow for the browser at startup.
 
 See the demos live, [here](https://micro-flow.softshell-sailfin.ts.net/).
 
@@ -60,15 +60,16 @@ The second command prints the public URL. Plain `docker compose up` still runs o
 Things to know:
 
 - The site is up only while your machine and the containers are running.
-- Backend jobs are kept in memory, so a restart clears them.
+- Backend jobs, the ETL warehouse, the saga's stock and the webhook inbox are kept in memory, so a restart clears them.
 - The job limits are shared by every visitor, not set per visitor.
 - link-checker blocks private and loopback addresses, so the public site can't be used to probe your local network.
+- The webhook-inbox signing secret is public on purpose, so anyone can post signed test events to the receiver. Its queue and log are capped.
 
 ## The demos
 
 Every demo has a **Workflow Status** panel in the top right that shows the step that's running, its type and what it's doing.
 
-The first seven demos run their workflows in your browser. **link-checker** and **job-scheduler** run theirs on the server: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
+The first seven demos run their workflows in your browser. The backend demos (**link-checker**, **job-scheduler**, **etl-pipeline**, **order-saga** and **webhook-inbox**) run theirs on the server, the way you'd use micro-flow in a Node service: the page calls the server's API, and a second **Server Status** panel (bottom right) streams the server's workflow events live.
 
 **On phones and tablets** the demos fit the screen width. The arenas scale down as a whole, and side-by-side panels stack. Below about 1200px wide the status panels move under the demo instead of covering it. On phones the Workflow Status panel becomes a bar pinned to the bottom of the screen that shows the current step. Tap it to see the full panel.
 
@@ -113,6 +114,7 @@ The robot finds its own way to the goal with the A* search algorithm, on a layou
 - **Heuristic:** Manhattan, Euclidean, or None (which makes the search Dijkstra's algorithm). Compare the **Nodes expanded** count on the same map.
 - **Go** starts the robot: first you see the search spread across the map (frontier and visited cells), then the chosen path, then the robot drives it. **Speed** sets how fast both happen. **Stop** ends a run early.
 - **Surprise walls** drop walls onto the path while the robot drives. When it hits one it stops and plans again from where it is. If the walls cut off the goal completely, the run ends as unreachable.
+- **Never block the goal** (on by default, needs Surprise walls) only drops a surprise wall where there's still another way to the goal, so every run can finish. In a maze most corridors are the only way through, so you'll see fewer surprises there. Turn it off to let the walls trap the robot.
 - The **Mission workflow** panel shows the workflow tree and highlights each step as it runs.
 
 ### flow-canvas (`/flow-canvas`)
@@ -166,6 +168,51 @@ Schedule jobs that run on the server at a set time.
 - Set **Run in** (5–120 s) and press **Schedule**. The job appears under **Waiting** with a countdown, then moves to **Done** with its result.
 - The jobs live on the server: close the tab, come back later, and the results are there. Everyone who opens the page sees the same board.
 - **clear** removes finished jobs. Jobs are kept in server memory, so restarting the server clears them.
+
+### etl-pipeline (`/etl-pipeline`)
+
+A batch ETL job that runs on the server: extract a CSV, profile it, clean it, check its quality, then load it into a warehouse.
+
+- Paste a CSV with `order_id,date,customer_email,country,amount,currency`, or pick a sample: **Messy orders** (mixed date formats, `$1,204.50` / `1.204,50` amounts, country names, bad rows and a duplicate), **Clean orders**, or **Broken header**.
+- Set the **quality gate** (the share of rows that may be rejected, default 20%) and optionally turn on **Flaky warehouse**, which makes 35% of chunk writes fail. Then press **Run pipeline**.
+- The six stage chips (extract → profile → transform → quality gate → load → report) light up as the server works through them. The page sends `POST /api/etl/runs` and polls `GET /api/etl/runs/:id`.
+- **Profile** shows how full each column is, its distinct count and some sample values. **Dead letter** lists rejected rows with their line number and reason. **Loaded** shows the cleaned rows (ISO dates, ISO-2 countries, amounts converted to USD). **Load chunks** shows each 20-row chunk's attempts, including retries.
+- If more rows are rejected than the gate allows, the run stops before loading anything. A header without the required columns fails at extract.
+- Loading is an upsert keyed on `order_id`, so loading the same file again reports every row as unchanged. The **Warehouse** panel is shared by everyone: row count, revenue by country and the latest writes. **truncate** empties it. It holds up to 2,000 rows in server memory.
+
+### order-saga (`/order-saga`)
+
+Place an order that runs as a saga across five mock services on the server: orders, inventory, payments, shipping and email. Each step that succeeds records how to undo itself. If a later step fails, those undo steps run in reverse.
+
+- Pick quantities, a test card and a shipping region, then press **Place order**. Card `4242…` succeeds, `4000…0119` hits two gateway timeouts and succeeds on the third try, and `4000…0002` is declined. No carrier ships to **Antarctica**.
+- **Inject faults**: **Slow carrier** makes shipping time out after 2 s, **Orders DB down** fails the last step, so a captured payment is refunded and the shipment cancelled, **Email down** fails only the receipt (the order still goes through, with a warning), and **Inventory down during undo** makes a compensation fail, so the order ends as **needs attention**.
+- The **Saga timeline** has a lane per service and adds each call as it happens: green for forward steps, blue for retries, red for errors and amber for compensations. A banner shows whether the order was confirmed, cancelled (and why) or needs attention.
+- **Services** shows stock (on hand and reserved) and the payments ledger (held, captured, voided, refunded) plus shipments. Stock is shared by everyone, so it really runs out. **restock** refills it. **Recent orders** lists everyone's orders; click one to see its timeline.
+- Orders are kept in server memory (the newest 30, at most 5 in flight), so a restart clears them.
+
+### webhook-inbox (`/webhook-inbox`)
+
+A webhook receiver running on the server. A fictional payment provider, Paystream, signs each event, and the server checks the signature, drops duplicates and processes the events in the background.
+
+- The **Paystream console** sends events: `order.created`, `payment.succeeded`, `payment.failed`, `customer.updated`, and `invoice.finalized`, which has no handler and is logged as unhandled. **Duplicate last** resends the last event with the same id. **Tampered** changes the body after signing it. **Stale** signs with a timestamp 10 minutes old. **Burst ×8** sends eight random events.
+- The receiver (`POST /api/webhooks/receive`) checks the HMAC-SHA256 signature in the `paystream-signature` header (`t=<timestamp>,v1=<hex>`) and rejects timestamps more than 5 minutes off (401). It ignores event ids it has already seen (200, duplicate). Otherwise it answers 202 straight away and queues the event (at most 30, after that 429).
+- **Workers**: two worker workflows drain the queue, and each event runs in its own workflow. A switch routes the event by type to its handlers, such as reserve-stock, send-confirmation and notify-slack. Each handler is retried twice with backoff.
+- **CRM outage** makes `sync-crm` fail, and **Flaky email** makes about 40% of email sends fail. An event that still fails after its retries goes to **Dead letter**. **Redeliver** runs the same workflow again, and handlers that already succeeded are skipped.
+- **Deliveries** lists every delivery with the receiver's response, its status and a chip per handler (colour shows the status, ×n shows the attempts). **clear finished** removes completed, ignored and rejected rows.
+- The receiver is a real endpoint. Send your own event (the secret `whsec_demo_microflow` is public because this is a demo):
+
+  ```sh
+  SECRET=whsec_demo_microflow
+  T=$(date +%s)
+  BODY='{"id":"evt_curl_'$T'","type":"customer.updated","created":'$T',"data":{"customer":{"id":"cus_1","email":"ada@example.com"}}}'
+  SIG=$(printf '%s.%s' "$T" "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
+  curl -i http://localhost:8081/api/webhooks/receive \
+    -H 'content-type: application/json' \
+    -H "paystream-signature: t=$T,v1=$SIG" \
+    -d "$BODY"
+  ```
+
+- Everyone shares one inbox, and it is kept in server memory, so a restart clears it.
 
 ## How it works
 
