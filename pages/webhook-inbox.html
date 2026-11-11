@@ -21,6 +21,62 @@
     then drain the queue, and each event runs in its own workflow. Everyone shares one inbox.
   </p>
 
+  <details class="panel guide" open>
+    <summary><h2>How to use this demo</h2></summary>
+
+    <p class="guide-intro">
+      A <em>webhook</em> is an HTTP request a service sends you when something happens, such as a payment
+      failing. You don't control the sender, so the receiver must check that each request is genuine,
+      expect the same event more than once, and answer fast. Slow work goes to a background queue.
+    </p>
+
+    <ol class="guide-flow" aria-label="What happens to each delivery">
+      <li><b>Console</b><span>Paystream signs an event</span></li>
+      <li><b>Receiver</b><span>checks signature &amp; time, drops repeats, replies 202</span></li>
+      <li><b>Queue</b><span>up to 30 waiting events</span></li>
+      <li><b>Workers</b><span>2 workflows take events one at a time</span></li>
+      <li><b>Handlers</b><span>picked by event type, retried on failure</span></li>
+    </ol>
+
+    <h3>Try these, in order</h3>
+    <ol class="guide-steps">
+      <li><b>Happy path.</b> Press <code>order.created</code>. In <em>Deliveries</em> it goes
+        <span class="state queued">queued</span> → <span class="state processing">processing</span> →
+        <span class="state done">done</span>, and its three handler chips turn green one by one.</li>
+      <li><b>Duplicates.</b> Press <em>Duplicate last</em>. The receiver answers 200 and marks it
+        <span class="pill duplicate">duplicate</span>, but nothing runs again. Real providers retry
+        deliveries, so a receiver has to remember event ids.</li>
+      <li><b>Forged or replayed requests.</b> Press <em>Tampered</em> (body changed after signing) and
+        <em>Stale</em> (signed 10 minutes ago). Both get 401 <span class="pill rejected">rejected</span>
+        and never reach the queue.</li>
+      <li><b>Load.</b> Press <em>Burst ×8</em>. Watch the queue fill up in <em>Workers</em> and both lanes
+        work through it at the same time.</li>
+      <li><b>Retries and the dead letter queue.</b> Tick <em>CRM outage</em>, then press
+        <code>customer.updated</code>. <code>sync-crm</code> is tried 3 times (the chip shows ×3), then the
+        event lands in <em>Dead letter</em>. Untick the outage and press <em>Redeliver</em>: the same
+        workflow runs again and finishes.</li>
+      <li><b>Partial failures.</b> Tick <em>Flaky email</em> and send a few <code>order.created</code> or
+        <code>payment.failed</code> events. Email handlers often succeed on a retry. If one still ends up in
+        the dead letter queue, redeliver it: handlers that already succeeded show as skipped, so stock
+        isn't reserved twice.</li>
+      <li><b>Unknown events.</b> Press <code>invoice.finalized</code>. No handler is registered for it, so
+        the switch's default case just logs it (<code>log-unhandled</code>).</li>
+    </ol>
+
+    <h3>Reading the deliveries log</h3>
+    <ul class="guide-legend">
+      <li><span class="pill accepted">accepted</span> <span class="pill duplicate">duplicate</span>
+        <span class="pill rejected">rejected</span> what the receiver replied (202, 200 or 401).</li>
+      <li><span class="chip running">running</span> <span class="chip retrying">retrying</span>
+        <span class="chip done">done</span> <span class="chip skipped">skipped</span>
+        <span class="chip failed">failed</span> one chip per handler. <b>×n</b> is how many attempts it took.</li>
+      <li>The <b>Server Status</b> panel streams the server's micro-flow events live. The <b>Workflow
+        Status</b> panel follows this page's own small workflow: build the request, post it, refresh.</li>
+      <li>Everyone who opens this page shares the inbox and the two toggles, so you may see other
+        visitors' events.</li>
+    </ul>
+  </details>
+
   <section class="panel console-panel">
     <h2>Paystream console <span class="panel-note">POST /api/webhooks/simulate</span></h2>
     <div class="console-row" id="event-buttons" aria-label="Send an event"></div>

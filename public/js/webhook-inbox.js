@@ -8,6 +8,9 @@ const responseEl = $('response-line');
 const sourceEl = $('source');
 
 const status = createStatusPanel();
+
+// The guide starts open, but on phones it would push the console far down.
+if (matchMedia('(max-width: 700px)').matches) document.querySelector('.guide').open = false;
 const server = createServerStatus({ demo: 'webhooks' });
 
 const EVENT_TYPES = ['order.created', 'payment.succeeded', 'payment.failed', 'customer.updated', 'invoice.finalized'];

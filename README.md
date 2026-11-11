@@ -194,6 +194,8 @@ Place an order that runs as a saga across five mock services on the server: orde
 
 A webhook receiver running on the server. A fictional payment provider, Paystream, signs each event, and the server checks the signature, drops duplicates and processes the events in the background.
 
+**How to use this demo**, at the top of the page, shows how a delivery flows from the console to the handlers, walks through seven scenarios in order (happy path, duplicates, forged and replayed requests, a burst, retries and the dead letter queue, partial failures, unknown events), and explains the colours in the log. On phones it starts collapsed; tap it to open.
+
 - The **Paystream console** sends events: `order.created`, `payment.succeeded`, `payment.failed`, `customer.updated`, and `invoice.finalized`, which has no handler and is logged as unhandled. **Duplicate last** resends the last event with the same id. **Tampered** changes the body after signing it. **Stale** signs with a timestamp 10 minutes old. **Burst ×8** sends eight random events.
 - The receiver (`POST /api/webhooks/receive`) checks the HMAC-SHA256 signature in the `paystream-signature` header (`t=<timestamp>,v1=<hex>`) and rejects timestamps more than 5 minutes off (401). It ignores event ids it has already seen (200, duplicate). Otherwise it answers 202 straight away and queues the event (at most 30, after that 429).
 - **Workers**: two worker workflows drain the queue, and each event runs in its own workflow. A switch routes the event by type to its handlers, such as reserve-stock, send-confirmation and notify-slack. Each handler is retried twice with backoff.
