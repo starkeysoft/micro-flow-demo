@@ -113,6 +113,7 @@ The robot finds its own way to the goal with the A* search algorithm, on a layou
 - **Heuristic:** Manhattan, Euclidean, or None (which makes the search Dijkstra's algorithm). Compare the **Nodes expanded** count on the same map.
 - **Go** starts the robot: first you see the search spread across the map (frontier and visited cells), then the chosen path, then the robot drives it. **Speed** sets how fast both happen. **Stop** ends a run early.
 - **Surprise walls** drop walls onto the path while the robot drives. When it hits one it stops and plans again from where it is. If the walls cut off the goal completely, the run ends as unreachable.
+- **Never block the goal** (on by default, needs Surprise walls) only drops a surprise wall where there's still another way to the goal, so every run can finish. In a maze most corridors are the only way through, so you'll see fewer surprises there. Turn it off to let the walls trap the robot.
 - The **Mission workflow** panel shows the workflow tree and highlights each step as it runs.
 
 ### flow-canvas (`/flow-canvas`)
